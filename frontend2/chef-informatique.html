@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Espace Chef Informatique - Maquette</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050915;
+      --panel: rgba(255,255,255,0.06);
+      --panel-strong: rgba(255,255,255,0.12);
+      --accent: #22d3ee;
+      --accent-2: #7c3aed;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --success: #34d399;
+      --danger: #f87171;
+      --radius: 14px;
+      --shadow: 0 20px 80px rgba(0,0,0,0.45);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 18% 24%, rgba(34,211,238,0.16), transparent 34%),
+                  radial-gradient(circle at 82% 12%, rgba(124,58,237,0.16), transparent 36%),
+                  linear-gradient(135deg, #0b1024, #050915);
+      color: var(--text);
+      padding: 26px;
+    }
+
+    header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; gap: 12px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -0.2px; }
+    .brand-dot { width: 11px; height: 11px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 0 18px rgba(34,211,238,0.45); }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 12px; }
+    .kpi-card { background: var(--panel); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px; box-shadow: var(--shadow); display: grid; gap: 6px; }
+    .kpi-label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .kpi-value { font-size: 24px; font-weight: 700; }
+
+    .tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+    .tab-btn { padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); background: var(--panel); color: var(--text); cursor: pointer; font-weight: 600; }
+    .tab-btn.active { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(34,211,238,0.35); background: linear-gradient(120deg, rgba(34,211,238,0.15), rgba(124,58,237,0.1)); }
+
+    .panel { background: var(--panel); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); backdrop-filter: blur(12px); }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; color: var(--muted); font-size: 12px; letter-spacing: 0.35px; text-transform: uppercase; }
+
+    .list { display: flex; flex-direction: column; gap: 10px; }
+    .card-item { padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); background: var(--panel-strong); display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+    .title { font-weight: 600; letter-spacing: 0.1px; }
+    .meta { color: var(--muted); font-size: 13px; }
+    .empty { color: var(--muted); font-size: 13px; text-align: center; padding: 18px 0; }
+
+    .btn { border: 1px solid rgba(255,255,255,0.14); color: var(--text); background: var(--panel); padding: 8px 12px; border-radius: 12px; cursor: pointer; font-weight: 600; }
+    .btn:hover { border-color: var(--accent); }
+    .btn-danger { border-color: rgba(248,113,113,0.4); color: #fecdd3; }
+    .btn-primary { background: linear-gradient(120deg, var(--accent), var(--accent-2)); color: #0b1120; border: none; box-shadow: 0 12px 32px rgba(124,58,237,0.35); }
+
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: grid; place-items: center; z-index: 10; backdrop-filter: blur(4px); }
+    .modal { width: min(520px, 92vw); background: var(--panel); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
+
+    form { display: flex; flex-direction: column; gap: 12px; }
+    label { color: var(--muted); font-size: 13px; }
+    input, select { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); color: var(--text); outline: none; font-family: inherit; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+    const MOCK = {
+      citoyens: [
+        { cin: '11112222', email: 'amine@example.com', password: 'pass123', nom: 'Amine', prenom: 'Ben Salah', role: 'citoyen', adresse: 'Rue du Lac', rue: 'Centre-ville' },
+        { cin: '33334444', email: 'syrine@example.com', password: 'pass123', nom: 'Syrine', prenom: 'Gharbi', role: 'citoyen', adresse: 'Avenue Carthage', rue: 'Centre-ville' },
+        { cin: '12345678', email: 'ahmed@example.com', password: 'pass123', nom: 'Ahmed', prenom: 'Ben Ali', role: 'citoyen', adresse: 'Rue de Tunis', rue: 'Centre-ville' }
+      ],
+      secretaires: [
+        { cin: '22223333', email: 'secretaire.updated@example.com', password: 'secret456', nom: 'Leila', prenom: 'Ghribi', service: 'Voirie' },
+        { cin: '44445555', email: 'malek@example.com', password: 'secret456', nom: 'Malek', prenom: 'A.', service: 'Eclairage' }
+      ],
+      agents: [
+        { cin: '55556666', nom: 'Agent Alpha', service: 'Voirie', dispo: true },
+        { cin: '77778888', nom: 'Agent Beta', service: 'Eclairage', dispo: true },
+        { cin: '12121212', nom: 'Agent Delta', service: 'Proprete', dispo: false }
+      ],
+      chefsInfo: [
+        { cin: '66667777', email: 'chefinf@example.com', password: 'infopass', nom: 'Foued', prenom: 'Maalej', role: 'chefinfo' },
+        { cin: '88889999', email: 'imen@ville.tn', password: 'pass123', nom: 'Imen', prenom: 'CIO', role: 'chefinfo' },
+        { cin: '10101010', email: 'karim@ville.tn', password: 'pass123', nom: 'Karim', prenom: 'Tech', role: 'chefinfo' }
+      ],
+      chefGeneral: { cin: '55556666', email: 'chefgen@example.com', password: 'chefpass', nom: 'Mohamed', prenom: 'Karoui', role: 'chef' }
+    };
+
+    const ROLE_CONFIG = {
+      citoyens: { label: 'Citoyens', canAdd: false, canEdit: true, canDelete: true },
+      secretaires: { label: 'Secrétaires', canAdd: true, canEdit: true, canDelete: true },
+      agents: { label: 'Agents', canAdd: true, canEdit: true, canDelete: true },
+      chefsInfo: { label: 'Chefs Informatique', canAdd: true, canEdit: true, canDelete: true },
+      chefGeneral: { label: 'Chef Général', canAdd: false, canEdit: true, canDelete: false }
+    };
+
+    function Modal({ children, onClose }) {
+      return (
+        <div className="modal-backdrop" onClick={onClose}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            {children}
+          </div>
+        </div>
+      );
+    }
+
+    function FormContent({ role, initial, onSubmit, onCancel }) {
+      const [form, setForm] = useState(initial || {});
+
+      const handleChange = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+      const fieldsByRole = {
+        citoyens: [
+          { key: 'cin', label: 'CIN', required: true },
+          { key: 'email', label: 'Email', required: true },
+          { key: 'password', label: 'Mot de passe', required: true },
+          { key: 'nom', label: 'Nom', required: true },
+          { key: 'prenom', label: 'Prénom', required: true },
+          { key: 'role', label: 'Rôle', required: true },
+          { key: 'adresse', label: 'Adresse', required: true },
+          { key: 'rue', label: 'Rue', required: true }
+        ],
+        secretaires: [
+          { key: 'cin', label: 'CIN', required: true },
+          { key: 'email', label: 'Email', required: true },
+          { key: 'password', label: 'Mot de passe', required: true },
+          { key: 'nom', label: 'Nom', required: true },
+          { key: 'prenom', label: 'Prénom', required: true },
+          { key: 'service', label: 'Service', required: true }
+        ],
+        agents: [
+          { key: 'cin', label: 'CIN', required: true },
+          { key: 'nom', label: 'Nom', required: true },
+          { key: 'service', label: 'Service', required: true },
+          { key: 'dispo', label: 'Disponible', type: 'select', options: [
+            { value: true, label: 'Oui' },
+            { value: false, label: 'Non' }
+          ] }
+        ],
+        chefsInfo: [
+          { key: 'cin', label: 'CIN', required: true },
+          { key: 'email', label: 'Email', required: true },
+          { key: 'password', label: 'Mot de passe', required: true },
+          { key: 'nom', label: 'Nom', required: true },
+          { key: 'prenom', label: 'Prénom', required: true },
+          { key: 'role', label: 'Rôle', required: true }
+        ],
+        chefGeneral: [
+          { key: 'cin', label: 'CIN', required: true },
+          { key: 'email', label: 'Email', required: true },
+          { key: 'password', label: 'Mot de passe', required: true },
+          { key: 'nom', label: 'Nom', required: true },
+          { key: 'prenom', label: 'Prénom', required: true },
+          { key: 'role', label: 'Rôle', required: true }
+        ]
+      };
+
+      const fields = fieldsByRole[role] || [];
+
+      const submit = (e) => {
+        e.preventDefault();
+        onSubmit(form);
+      };
+
+      return (
+        <form onSubmit={submit}>
+          <h3>{initial ? 'Modifier' : 'Créer'} {ROLE_CONFIG[role]?.label?.slice(0, -1) || ''}</h3>
+          {fields.map((f) => (
+            <div key={f.key}>
+              <label>{f.label}</label>
+              {f.type === 'select' ? (
+                <select value={form[f.key]} onChange={(e) => handleChange(f.key, e.target.value === 'true')} required={f.required}>
+                  {f.options.map((opt) => (
+                    <option key={opt.label} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              ) : (
+                <input value={form[f.key] || ''} onChange={(e) => handleChange(f.key, e.target.value)} required={f.required} />
+              )}
+            </div>
+          ))}
+          <div className="actions" style={{ justifyContent: 'flex-end' }}>
+            <button type="button" className="btn" onClick={onCancel}>Annuler</button>
+            <button type="submit" className="btn-primary">Enregistrer</button>
+          </div>
+        </form>
+      );
+    }
+
+    function ListSection({ title, items, roleKey, onAdd, onEdit, onDelete }) {
+      const cfg = ROLE_CONFIG[roleKey];
+      const isSingle = roleKey === 'chefGeneral';
+      const listItems = isSingle ? (items ? [items] : []) : items;
+
+      return (
+        <div className="panel">
+          <div className="panel-header">
+            <span>{title}</span>
+            <div className="actions">
+              {cfg.canAdd && <button className="btn" onClick={onAdd}>Ajouter</button>}
+            </div>
+          </div>
+          <div className="list">
+            {(!listItems || listItems.length === 0) && <div className="empty">Aucun enregistrement.</div>}
+            {listItems && listItems.map((item) => (
+              <div key={item.cin} className="card-item">
+                <div>
+                  <div className="title">{item.nom} {item.prenom || ''}</div>
+                  <div className="meta">CIN {item.cin}{item.role ? ` · ${item.role}` : ''}{item.email ? ` · ${item.email}` : ''}</div>
+                  {item.service && <div className="meta">Service: {item.service}</div>}
+                  {item.adresse && <div className="meta">Adresse: {item.adresse}</div>}
+                  {item.rue && <div className="meta">Rue: {item.rue}</div>}
+                  {item.dispo !== undefined && <div className="meta">Disponible: {item.dispo ? 'Oui' : 'Non'}</div>}
+                  {item.password && <div className="meta">Mot de passe: {item.password}</div>}
+                </div>
+                <div className="actions">
+                  {cfg.canEdit && <button className="btn" onClick={() => onEdit(item)}>Modifier</button>}
+                  {cfg.canDelete && !isSingle && <button className="btn btn-danger" onClick={() => onDelete(item)}>Supprimer</button>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [activeTab, setActiveTab] = useState('citoyens');
+      const [data, setData] = useState(MOCK);
+      const [modalState, setModalState] = useState({ open: false, role: null, mode: 'create', current: null });
+
+      const openCreate = (role) => setModalState({ open: true, role, mode: 'create', current: null });
+      const openEdit = (role, item) => setModalState({ open: true, role, mode: 'edit', current: item });
+      const closeModal = () => setModalState({ open: false, role: null, mode: 'create', current: null });
+
+      const updateList = (role, updater) => {
+        setData((prev) => {
+          const next = { ...prev };
+          if (role === 'chefGeneral') {
+            next[role] = updater(prev[role]);
+          } else {
+            next[role] = updater(prev[role] || []);
+          }
+          return next;
+        });
+      };
+
+      const handleSubmit = (values) => {
+        const role = modalState.role;
+        if (!role) return;
+        if (role === 'chefGeneral') {
+          updateList(role, () => values);
+        } else if (modalState.mode === 'create') {
+          updateList(role, (list) => [...list, values]);
+        } else {
+          updateList(role, (list) => list.map((el) => el.cin === modalState.current.cin ? { ...el, ...values } : el));
+        }
+        closeModal();
+      };
+
+      const handleDelete = (role, item) => {
+        updateList(role, (list) => list.filter((el) => el.cin !== item.cin));
+      };
+
+      const kpis = useMemo(() => ({
+        citoyens: data.citoyens.length,
+        secretaires: data.secretaires.length,
+        agents: data.agents.length,
+        chefsInfo: data.chefsInfo.length,
+        chefGeneral: data.chefGeneral ? 1 : 0
+      }), [data]);
+
+      return (
+        <div>
+          <header>
+            <div className="brand"><span className="brand-dot"></span> Chef Informatique</div>
+            <div style={{ color: 'var(--muted)', fontSize: 13 }}>Gestion des comptes (ajout / modification / suppression selon rôle)</div>
+          </header>
+
+          <div className="kpi-grid">
+            <div className="kpi-card"><div className="kpi-label">Citoyens</div><div className="kpi-value">{kpis.citoyens}</div></div>
+            <div className="kpi-card"><div className="kpi-label">Secrétaires</div><div className="kpi-value">{kpis.secretaires}</div></div>
+            <div className="kpi-card"><div className="kpi-label">Agents</div><div className="kpi-value">{kpis.agents}</div></div>
+            <div className="kpi-card"><div className="kpi-label">Chefs Info</div><div className="kpi-value">{kpis.chefsInfo}</div></div>
+            <div className="kpi-card"><div className="kpi-label">Chef Général</div><div className="kpi-value">{kpis.chefGeneral}</div></div>
+          </div>
+
+          <div className="tabs">
+            <button className={`tab-btn ${activeTab === 'citoyens' ? 'active' : ''}`} onClick={() => setActiveTab('citoyens')}>Citoyens</button>
+            <button className={`tab-btn ${activeTab === 'secretaires' ? 'active' : ''}`} onClick={() => setActiveTab('secretaires')}>Secrétaires</button>
+            <button className={`tab-btn ${activeTab === 'agents' ? 'active' : ''}`} onClick={() => setActiveTab('agents')}>Agents</button>
+            <button className={`tab-btn ${activeTab === 'chefsInfo' ? 'active' : ''}`} onClick={() => setActiveTab('chefsInfo')}>Chefs Informatique</button>
+            <button className={`tab-btn ${activeTab === 'chefGeneral' ? 'active' : ''}`} onClick={() => setActiveTab('chefGeneral')}>Chef Général</button>
+          </div>
+
+          {activeTab === 'citoyens' && (
+            <ListSection
+              title="Citoyens"
+              items={data.citoyens}
+              roleKey="citoyens"
+              onAdd={() => openCreate('citoyens')}
+              onEdit={(item) => openEdit('citoyens', item)}
+              onDelete={(item) => handleDelete('citoyens', item)}
+            />
+          )}
+
+          {activeTab === 'secretaires' && (
+            <ListSection
+              title="Secrétaires"
+              items={data.secretaires}
+              roleKey="secretaires"
+              onAdd={() => openCreate('secretaires')}
+              onEdit={(item) => openEdit('secretaires', item)}
+              onDelete={(item) => handleDelete('secretaires', item)}
+            />
+          )}
+
+          {activeTab === 'agents' && (
+            <ListSection
+              title="Agents"
+              items={data.agents}
+              roleKey="agents"
+              onAdd={() => openCreate('agents')}
+              onEdit={(item) => openEdit('agents', item)}
+              onDelete={(item) => handleDelete('agents', item)}
+            />
+          )}
+
+          {activeTab === 'chefsInfo' && (
+            <ListSection
+              title="Chefs Informatique"
+              items={data.chefsInfo}
+              roleKey="chefsInfo"
+              onAdd={() => openCreate('chefsInfo')}
+              onEdit={(item) => openEdit('chefsInfo', item)}
+              onDelete={(item) => handleDelete('chefsInfo', item)}
+            />
+          )}
+
+          {activeTab === 'chefGeneral' && (
+            <ListSection
+              title="Chef Général"
+              items={data.chefGeneral}
+              roleKey="chefGeneral"
+              onAdd={() => openCreate('chefGeneral')}
+              onEdit={(item) => openEdit('chefGeneral', item)}
+              onDelete={() => {}}
+            />
+          )}
+
+          {modalState.open && (
+            <Modal onClose={closeModal}>
+              <FormContent
+                role={modalState.role}
+                initial={modalState.mode === 'edit' ? modalState.current : undefined}
+                onSubmit={handleSubmit}
+                onCancel={closeModal}
+              />
+            </Modal>
+          )}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Espace Citoyen - Maquette</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: rgba(255, 255, 255, 0.06);
+      --panel-strong: rgba(255, 255, 255, 0.12);
+      --accent: #22d3ee;
+      --accent-2: #7c3aed;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --danger: #f87171;
+      --success: #4ade80;
+      --shadow: 0 20px 80px rgba(0,0,0,0.45);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at 10% 20%, rgba(34,211,238,0.12), transparent 32%),
+                  radial-gradient(circle at 80% 0%, rgba(124,58,237,0.16), transparent 34%),
+                  radial-gradient(circle at 50% 80%, rgba(124,58,237,0.1), transparent 40%),
+                  var(--bg);
+      padding: 28px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .brand {
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+    }
+
+    .brand-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 18px rgba(34,211,238,0.45);
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 1px solid rgba(255,255,255,0.14);
+      color: var(--text);
+      background: var(--panel);
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.1px;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border 0.12s ease;
+      backdrop-filter: blur(12px);
+    }
+    .btn:hover { transform: translateY(-1px); border-color: var(--accent); box-shadow: 0 10px 28px rgba(34,211,238,0.25); }
+
+    .btn-primary {
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      color: #0b1120;
+      border: none;
+      box-shadow: 0 12px 32px rgba(124,58,237,0.35);
+    }
+    .btn-primary:hover { box-shadow: 0 16px 44px rgba(124,58,237,0.45); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 20px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      font-size: 12px;
+    }
+
+    .list { display: flex; flex-direction: column; gap: 10px; }
+
+    .card-item {
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: var(--panel-strong);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      transition: border 0.12s ease, transform 0.12s ease;
+      cursor: pointer;
+    }
+    .card-item:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+    .title { font-weight: 600; letter-spacing: 0.1px; }
+    .meta { color: var(--muted); font-size: 13px; }
+
+    .badge {
+      padding: 6px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      font-size: 12px;
+      letter-spacing: 0.2px;
+    }
+
+    .badge-success { color: var(--success); border-color: rgba(74,222,128,0.3); }
+    .badge-pending { color: #fbbf24; border-color: rgba(251,191,36,0.35); }
+
+    .pill-danger { color: var(--danger); font-weight: 600; cursor: pointer; }
+
+    .detail { display: grid; gap: 10px; }
+    .detail-row { display: flex; justify-content: space-between; color: var(--muted); font-size: 13px; }
+    .detail-row span:last-child { color: var(--text); font-weight: 600; }
+
+    .empty { color: var(--muted); font-size: 13px; text-align: center; padding: 24px 0; }
+
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: grid;
+      place-items: center;
+      z-index: 10;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal {
+      width: min(520px, 90vw);
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    form { display: flex; flex-direction: column; gap: 12px; }
+    label { color: var(--muted); font-size: 13px; }
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      outline: none;
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    textarea { min-height: 100px; resize: vertical; }
+
+    .input-with-icon {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .input-with-icon input { flex: 1; }
+
+    .icon-btn {
+      border: 1px solid rgba(255,255,255,0.14);
+      background: var(--panel-strong);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: border 0.12s ease, transform 0.12s ease;
+    }
+
+    .icon-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+
+    .notif-chip {
+      padding: 10px;
+      border-radius: 10px;
+      background: var(--panel-strong);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .close { cursor: pointer; color: var(--danger); font-weight: 700; }
+
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // Jeu de données statique pour la maquette
+    const DEMANDES_MOCK = [
+      {
+        identifiant: 101,
+        citoyenRef: '12345678',
+        dateDeSoumission: '2025-02-14',
+        image: '(binaire)',
+        localisation: 'Rue des Jasmins, Tunis',
+        etat: 'en attente'
+      },
+      {
+        identifiant: 102,
+        citoyenRef: '12345678',
+        dateDeSoumission: '2025-02-10',
+        image: '(binaire)',
+        localisation: 'Avenue Habib Bourguiba',
+        etat: 'en attente'
+      }
+    ];
+
+    const NOTIFS_MOCK = [
+      { idN: 1, citoyenRef: '12345678', contenue: 'Votre demande est acceptée.' },
+      { idN: 2, citoyenRef: '12345678', contenue: 'Votre demande est acceptée.' }
+    ];
+
+    function Pill({ text, tone = 'pending' }) {
+      const cls = tone === 'success' ? 'badge badge-success' : 'badge badge-pending';
+      return <span className={cls}>{text}</span>;
+    }
+
+    function DemandesList({ demandes, onSelect, onDelete }) {
+      if (!demandes.length) return <div className="empty">Aucune demande pour le moment.</div>;
+      return (
+        <div className="list">
+          {demandes.map((d) => (
+            <div key={d.identifiant} className="card-item" onClick={() => onSelect(d)}>
+              <div>
+                <div className="title">Demande #{d.identifiant}</div>
+                <div className="meta">{d.localisation} · {d.dateDeSoumission}</div>
+              </div>
+              <div style={{ display: 'grid', gap: 6, justifyItems: 'end' }}>
+                <span
+                  className="pill-danger"
+                  onClick={(e) => { e.stopPropagation(); onDelete(d.identifiant); }}
+                  aria-label="Annuler la demande"
+                >Annuler</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    function DemandeDetail({ demande }) {
+      if (!demande) return <div className="empty">Sélectionnez une demande pour voir les détails.</div>;
+      return (
+        <div className="detail">
+          <div className="title">Demande #{demande.identifiant}</div>
+          <div className="detail-row"><span>Date de soumission</span><span>{demande.dateDeSoumission}</span></div>
+          <div className="detail-row"><span>Localisation</span><span>{demande.localisation}</span></div>
+          <div className="detail-row"><span>Image</span><span>{demande.image ? 'Pièce jointe' : 'Aucune'}</span></div>
+        </div>
+      );
+    }
+
+    function Modal({ children, onClose }) {
+      return (
+        <div className="modal-backdrop" onClick={onClose}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            {children}
+          </div>
+        </div>
+      );
+    }
+
+    function Notifications({ notifs, onDelete }) {
+      if (!notifs.length) return <div className="empty">Aucune notification.</div>;
+      return (
+        <div className="list">
+          {notifs.map((n) => (
+            <div className="notif-chip" key={n.idN}>
+              <div>
+                <div className="title">Notification #{n.idN}</div>
+                <div className="meta">{n.contenue}</div>
+              </div>
+              <span className="close" onClick={() => onDelete(n.idN)}>×</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    function App() {
+      const [demandes, setDemandes] = useState(DEMANDES_MOCK);
+      const [selected, setSelected] = useState(DEMANDES_MOCK[0]);
+      const [showCreate, setShowCreate] = useState(false);
+      const [showNotifs, setShowNotifs] = useState(false);
+      const [notifs, setNotifs] = useState(NOTIFS_MOCK);
+
+      const [form, setForm] = useState({
+        localisation: '',
+        imageBase64: ''
+      });
+
+      const handleDeleteDemande = (id) => {
+        setDemandes((prev) => prev.filter((d) => d.identifiant !== id));
+        if (selected && selected.identifiant === id) setSelected(null);
+      };
+
+      const handleDeleteNotif = (idN) => {
+        setNotifs((prev) => prev.filter((n) => n.idN !== idN));
+      };
+
+      const handleCreate = (e) => {
+        e.preventDefault();
+        const nextId = Math.max(0, ...demandes.map((d) => d.identifiant)) + 1;
+        const newDemande = {
+          identifiant: nextId,
+          citoyenRef: '',
+          dateDeSoumission: new Date().toISOString().slice(0,10),
+          image: form.imageBase64 ? '(binaire)' : '',
+          localisation: form.localisation,
+          etat: 'en attente'
+        };
+        setDemandes((prev) => [newDemande, ...prev]);
+        setSelected(newDemande);
+        setShowCreate(false);
+      };
+
+      return (
+        <div>
+          <header>
+            <div className="brand"><span className="brand-dot"></span> Espace Citoyen</div>
+            <div className="actions">
+              <button className="btn" onClick={() => setShowNotifs(true)}>Notifications ({notifs.length})</button>
+              <button className="btn-primary btn" onClick={() => setShowCreate(true)}>Créer une demande</button>
+            </div>
+          </header>
+
+          <div className="layout">
+            <div className="panel">
+              <div className="panel-header">
+                <span>Demandes</span>
+                <span>{demandes.length} en cours</span>
+              </div>
+              <DemandesList demandes={demandes} onSelect={setSelected} onDelete={handleDeleteDemande} />
+            </div>
+
+            <div className="panel">
+              <div className="panel-header"><span>Détails</span><span></span></div>
+              <DemandeDetail demande={selected} />
+            </div>
+          </div>
+
+          {showCreate && (
+            <Modal onClose={() => setShowCreate(false)}>
+              <h2>Nouvelle demande</h2>
+              <form onSubmit={handleCreate}>
+                <div>
+                  <label>Localisation (localisation)</label>
+                  <div className="input-with-icon">
+                    <input
+                      value={form.localisation}
+                      onChange={(e) => setForm({ ...form, localisation: e.target.value })}
+                      placeholder="Adresse"
+                      required
+                    />
+                    <button type="button" className="icon-btn" title="Utiliser le GPS">📍</button>
+                  </div>
+                </div>
+                <div>
+                  <label>Image (imageBase64)</label>
+                  <div className="input-with-icon">
+                    <input
+                      value={form.imageBase64}
+                      onChange={(e) => setForm({ ...form, imageBase64: e.target.value })}
+                      placeholder="Base64 (optionnel)"
+                    />
+                    <button type="button" className="icon-btn" title="Prendre une photo">📷</button>
+                    <button type="button" className="icon-btn" title="Uploader une image">⬆️</button>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+                  <button type="button" className="btn" onClick={() => setShowCreate(false)}>Annuler</button>
+                  <button type="submit" className="btn-primary btn">Enregistrer</button>
+                </div>
+              </form>
+            </Modal>
+          )}
+
+          {showNotifs && (
+            <Modal onClose={() => setShowNotifs(false)}>
+              <h2>Notifications</h2>
+              <Notifications notifs={notifs} onDelete={handleDeleteNotif} />
+            </Modal>
+          )}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

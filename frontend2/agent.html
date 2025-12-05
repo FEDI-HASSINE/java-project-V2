@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Espace Agent - Maquette</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0c1224;
+      --panel: rgba(255,255,255,0.06);
+      --panel-strong: rgba(255,255,255,0.12);
+      --accent: #22d3ee;
+      --accent-2: #7c3aed;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --danger: #f87171;
+      --success: #4ade80;
+      --shadow: 0 20px 80px rgba(0,0,0,0.45);
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at 8% 18%, rgba(34,211,238,0.16), transparent 30%),
+                  radial-gradient(circle at 84% 10%, rgba(124,58,237,0.18), transparent 34%),
+                  radial-gradient(circle at 50% 80%, rgba(124,58,237,0.12), transparent 40%),
+                  var(--bg);
+      padding: 26px;
+    }
+
+    header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -0.2px; }
+    .brand-dot { width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(120deg, var(--accent), var(--accent-2)); box-shadow: 0 0 18px rgba(34,211,238,0.45); }
+
+    .layout { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 18px; }
+    .panel { background: var(--panel); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); backdrop-filter: blur(12px); }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; color: var(--muted); font-size: 12px; letter-spacing: 0.4px; text-transform: uppercase; }
+
+    .list { display: flex; flex-direction: column; gap: 10px; }
+    .card-item { padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); background: var(--panel-strong); display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; cursor: pointer; transition: border 0.12s ease, transform 0.12s ease; }
+    .card-item:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .title { font-weight: 600; letter-spacing: 0.1px; }
+    .meta { color: var(--muted); font-size: 13px; }
+
+    .detail { display: grid; gap: 10px; }
+    .detail-row { display: flex; justify-content: space-between; color: var(--muted); font-size: 13px; }
+    .detail-row span:last-child { color: var(--text); font-weight: 600; }
+    .empty { color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0; }
+
+    .progress-wrap { margin-top: 12px; }
+    .progress-bar { width: 100%; height: 10px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(120deg, var(--accent), var(--accent-2)); }
+
+    .btn { border: 1px solid rgba(255,255,255,0.14); color: var(--text); background: var(--panel); padding: 10px 14px; border-radius: var(--radius); cursor: pointer; font-weight: 600; letter-spacing: 0.1px; transition: transform 0.12s ease, box-shadow 0.12s ease, border 0.12s ease; backdrop-filter: blur(12px); }
+    .btn:hover { transform: translateY(-1px); border-color: var(--accent); box-shadow: 0 10px 28px rgba(34,211,238,0.25); }
+    .btn-primary { background: linear-gradient(120deg, var(--accent), var(--accent-2)); color: #0b1120; border: none; box-shadow: 0 12px 32px rgba(124,58,237,0.35); }
+    .btn-primary:hover { box-shadow: 0 16px 44px rgba(124,58,237,0.45); }
+
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: grid; place-items: center; z-index: 10; backdrop-filter: blur(4px); }
+    .modal { width: min(560px, 92vw); background: var(--panel); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
+    form { display: flex; flex-direction: column; gap: 12px; }
+    label { color: var(--muted); font-size: 13px; }
+    input, textarea { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); color: var(--text); outline: none; font-family: inherit; font-size: 14px; }
+    textarea { min-height: 100px; resize: vertical; }
+
+    @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+    const CIN_AGENT = '55556666';
+
+    const INTERVENTIONS_MOCK = [
+      { id: 301, budget: 12000, dateDebut: '2025-02-18', type: 'Urgent', urgence: 3, etat: 25, localisation: 'Rue du Lac', image: '(binaire)', cinAgent: CIN_AGENT, cinSecretaire: '' },
+      { id: 302, budget: 8000, dateDebut: '2025-02-10', type: 'Standard', urgence: 2, etat: 60, localisation: 'Avenue Carthage', image: '(binaire)', cinAgent: CIN_AGENT, cinSecretaire: '' },
+      { id: 303, budget: 5000, dateDebut: '2025-02-22', type: 'Urgent', urgence: 4, etat: 0, localisation: 'Boulevard Central', image: '(binaire)', cinAgent: CIN_AGENT, cinSecretaire: '' }
+    ];
+
+    function DemandesList({ interventions, onSelect }) {
+      if (!interventions.length) return <div className="empty">Aucune intervention affectée.</div>;
+      return (
+        <div className="list">
+          {interventions.map((i) => (
+            <div key={i.id} className="card-item" onClick={() => onSelect(i)}>
+              <div>
+                <div className="title">Intervention #{i.id}</div>
+                <div className="meta">{i.localisation} · {i.dateDebut}</div>
+              </div>
+              <div className="progress-wrap" style={{ width: 120 }}>
+                <div className="progress-bar">
+                  <div className="progress-fill" style={{ width: `${Math.min(100, i.etat)}%` }}></div>
+                </div>
+                <div className="meta" style={{ textAlign: 'right' }}>{i.etat}%</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    function DemandeDetail({ intervention, onUpdateProgress }) {
+      if (!intervention) return <div className="empty">Sélectionnez une intervention pour voir les détails.</div>;
+      return (
+        <div className="detail">
+          <div className="title">Intervention #{intervention.id}</div>
+          <div className="detail-row"><span>Budget</span><span>{intervention.budget}</span></div>
+          <div className="detail-row"><span>Date début</span><span>{intervention.dateDebut}</span></div>
+          <div className="detail-row"><span>Type</span><span>{intervention.type}</span></div>
+          <div className="detail-row"><span>Urgence</span><span>{intervention.urgence}</span></div>
+          <div className="detail-row"><span>Localisation</span><span>{intervention.localisation}</span></div>
+          <div className="detail-row"><span>Image</span><span>{intervention.image ? 'Pièce jointe' : 'Aucune'}</span></div>
+          <div className="progress-wrap">
+            <label style={{ color: 'var(--muted)', fontSize: 13 }}>Avancement (etat en %)</label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={intervention.etat}
+              onChange={(e) => onUpdateProgress(Number(e.target.value))}
+            />
+            <div className="meta" style={{ textAlign: 'right' }}>{intervention.etat}%</div>
+          </div>
+        </div>
+      );
+    }
+
+    function Modal({ children, onClose }) {
+      return (
+        <div className="modal-backdrop" onClick={onClose}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            {children}
+          </div>
+        </div>
+      );
+    }
+
+    function RapportForm({ intervention, onSave, onCancel }) {
+      const [form, setForm] = useState({
+        duree: '',
+        description: ''
+      });
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        const rapport = {
+          duree: Number(form.duree),
+          description: form.description,
+          image: '(binaire)',
+          interventionRef: intervention?.id || ''
+        };
+        onSave(rapport);
+      };
+
+      return (
+        <Modal onClose={onCancel}>
+          <h2>Rapport de travail</h2>
+          <form onSubmit={handleSubmit}>
+            <div>
+              <label>Durée (duree)</label>
+              <input value={form.duree} onChange={(e) => setForm({ ...form, duree: e.target.value })} required />
+            </div>
+            <div>
+              <label>Description (description)</label>
+              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
+            </div>
+            <div>
+              <label>Image (image)</label>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <button type="button" className="btn" style={{ padding: '10px 12px' }}>📷</button>
+                <button type="button" className="btn" style={{ padding: '10px 12px' }}>⬆️</button>
+              </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button type="button" className="btn" onClick={onCancel}>Annuler</button>
+              <button type="submit" className="btn-primary btn">Enregistrer</button>
+            </div>
+          </form>
+        </Modal>
+      );
+    }
+
+    function App() {
+      const [interventions, setInterventions] = useState(INTERVENTIONS_MOCK);
+      const [selected, setSelected] = useState(INTERVENTIONS_MOCK[0]);
+      const [showRapport, setShowRapport] = useState(false);
+
+      const interventionsForAgent = useMemo(() => interventions.filter((i) => i.cinAgent === CIN_AGENT), [interventions]);
+
+      const handleUpdateProgress = (value) => {
+        setInterventions((prev) => prev.map((i) => i.id === selected.id ? { ...i, etat: value } : i));
+        setSelected((prev) => prev ? { ...prev, etat: value } : prev);
+        if (value >= 100) {
+          setShowRapport(true);
+        }
+      };
+
+      const handleSaveRapport = (rapport) => {
+        console.log('Rapport créé (maquette):', rapport);
+        setShowRapport(false);
+        if (!selected) return;
+        setInterventions((prev) => {
+          const next = prev.filter((i) => i.id !== selected.id);
+          setSelected(next.length ? next[0] : null);
+          return next;
+        });
+      };
+
+      return (
+        <div>
+          <header>
+            <div className="brand"><span className="brand-dot"></span> Espace Agent</div>
+          </header>
+
+          <div className="layout">
+            <div className="panel">
+              <div className="panel-header"><span>Interventions assignées</span><span>{interventionsForAgent.length}</span></div>
+              <DemandesList interventions={interventionsForAgent} onSelect={setSelected} />
+            </div>
+            <div className="panel">
+              <div className="panel-header"><span>Détails</span><span></span></div>
+              <DemandeDetail intervention={selected} onUpdateProgress={handleUpdateProgress} />
+            </div>
+          </div>
+
+          {showRapport && (
+            <RapportForm
+              intervention={selected}
+              onSave={handleSaveRapport}
+              onCancel={() => setShowRapport(false)}
+            />
+          )}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

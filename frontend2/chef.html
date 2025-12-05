@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Espace Chef Général - Maquette</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070a18;
+      --panel: rgba(255,255,255,0.06);
+      --panel-strong: rgba(255,255,255,0.12);
+      --accent: #22d3ee;
+      --accent-2: #f472b6;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --success: #34d399;
+      --danger: #f87171;
+      --warn: #fbbf24;
+      --radius: 14px;
+      --shadow: 0 20px 80px rgba(0,0,0,0.45);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 18% 24%, rgba(34,211,238,0.16), transparent 34%),
+                  radial-gradient(circle at 82% 12%, rgba(244,114,182,0.20), transparent 36%),
+                  linear-gradient(135deg, #0b1024, #070a18);
+      color: var(--text);
+      padding: 26px;
+    }
+
+    header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; gap: 12px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -0.2px; }
+    .brand-dot { width: 11px; height: 11px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 0 18px rgba(34,211,238,0.45); }
+
+    .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .panel { background: var(--panel); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); backdrop-filter: blur(12px); }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; color: var(--muted); font-size: 12px; letter-spacing: 0.35px; text-transform: uppercase; }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 12px; }
+    .kpi-card { background: var(--panel); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px; box-shadow: var(--shadow); display: grid; gap: 6px; }
+    .kpi-label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .kpi-value { font-size: 24px; font-weight: 700; }
+    .kpi-trend { font-size: 12px; color: var(--success); }
+
+    .list { display: flex; flex-direction: column; gap: 10px; }
+    .card-item { padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); background: var(--panel-strong); display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+    .title { font-weight: 600; letter-spacing: 0.1px; }
+    .meta { color: var(--muted); font-size: 13px; }
+
+    .badge { padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); font-size: 12px; letter-spacing: 0.2px; white-space: nowrap; }
+    .badge-ok { color: var(--success); border-color: rgba(52,211,153,0.3); }
+    .badge-warn { color: var(--warn); border-color: rgba(251,191,36,0.3); }
+    .badge-danger { color: var(--danger); border-color: rgba(248,113,113,0.35); }
+
+    .progress-track { height: 8px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
+    .progress-bar { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+
+    .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .row-between { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .empty { color: var(--muted); font-size: 13px; text-align: center; padding: 18px 0; }
+
+    .tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+    .tab-btn { padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); background: var(--panel); color: var(--text); cursor: pointer; font-weight: 600; }
+    .tab-btn.active { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(34,211,238,0.35); background: linear-gradient(120deg, rgba(34,211,238,0.15), rgba(244,114,182,0.1)); }
+
+    @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useMemo, useState } = React;
+
+    const AGENTS = [
+      { cin: '55556666', nom: 'Agent Alpha', service: 'Voirie', dispo: true },
+      { cin: '77778888', nom: 'Agent Beta', service: 'Éclairage', dispo: true },
+      { cin: '12121212', nom: 'Agent Delta', service: 'Propreté', dispo: true },
+      { cin: '34343434', nom: 'Agent Epsilon', service: 'Signalisation', dispo: false },
+      { cin: '99990000', nom: 'Agent Gamma', service: 'Propreté', dispo: false }
+    ];
+
+    const INTERVENTIONS = [
+      { id: 901, type: 'Urgent', localisation: 'Rue du Lac', etat: 65, urgence: 4, agent: '55556666' },
+      { id: 902, type: 'Préventif', localisation: 'Avenue Carthage', etat: 100, urgence: 2, agent: '77778888' },
+      { id: 903, type: 'Signalisation', localisation: 'Bd de l\'Indépendance', etat: 20, urgence: 5, agent: '34343434' }
+    ];
+
+    const RAPPORTS = [
+      { id: 301, interventionRef: 902, cinAgent: '77778888', duree: '3h', description: 'Remplacement éclairage', cout: 450 },
+      { id: 302, interventionRef: 901, cinAgent: '55556666', duree: '1h30', description: 'Dégagement voirie', cout: 180 }
+    ];
+
+    const EQUIPEMENTS = [
+      { id: 1, nom: 'Camion benne', disponible: true },
+      { id: 2, nom: 'Pelleteuse', disponible: true },
+      { id: 3, nom: 'Equipe voirie', disponible: false },
+      { id: 4, nom: 'Kit éclairage', disponible: true },
+      { id: 5, nom: 'Balai', disponible: true }
+    ];
+
+    const CITIZENS = [
+      { cin: '12345678', email: 'ahmed@example.com', nom: 'Ahmed', prenom: 'Ben Ali', adresse: 'Rue de Tunis', rue: 'Centre-ville' },
+      { cin: '98765432', email: 'nour.citizen@example.com', nom: 'Nour', prenom: 'Saadi', adresse: 'Rue Ibn Khaldoun', rue: 'El Menzah' },
+      { cin: '11223344', email: 'asma@example.com', nom: 'Asma', prenom: 'Gharbi', adresse: 'Avenue Bourguiba', rue: 'Carthage' }
+    ];
+
+    function Progress({ value }) {
+      const pct = Math.min(100, Math.max(0, value));
+      return (
+        <div className="progress-track">
+          <div className="progress-bar" style={{ width: pct + '%' }}></div>
+        </div>
+      );
+    }
+
+    function BadgeEtat({ value }) {
+      if (value >= 100) return <span className="badge badge-ok">Terminé</span>;
+      if (value >= 60) return <span className="badge badge-warn">En cours</span>;
+      return <span className="badge badge-danger">À démarrer</span>;
+    }
+
+    function App() {
+      const [selectedIntervention, setSelectedIntervention] = useState(INTERVENTIONS[0] || null);
+      const [selectedRapport, setSelectedRapport] = useState(RAPPORTS[0] || null);
+      const [activeSection, setActiveSection] = useState('interventions');
+
+      const kpis = useMemo(() => {
+        const totalInterv = INTERVENTIONS.length;
+        const done = INTERVENTIONS.filter(i => i.etat >= 100).length;
+        const enCours = INTERVENTIONS.filter(i => i.etat > 0 && i.etat < 100).length;
+        const nonDemarre = INTERVENTIONS.filter(i => i.etat === 0).length;
+        const dispoAgents = AGENTS.filter(a => a.dispo).length;
+        const urgenceMoy = INTERVENTIONS.length ? (INTERVENTIONS.reduce((s, i) => s + i.urgence, 0) / INTERVENTIONS.length).toFixed(1) : '0';
+        const equipDispo = EQUIPEMENTS.filter(e => e.disponible).length;
+        const coutTotal = RAPPORTS.reduce((s, r) => s + r.cout, 0);
+        return {
+          totalInterv,
+          done,
+          enCours,
+          nonDemarre,
+          dispoAgents,
+          urgenceMoy,
+          equipDispo,
+          coutTotal
+        };
+      }, []);
+
+      return (
+        <div>
+          <header>
+            <div className="brand"><span className="brand-dot"></span> Espace Chef Général</div>
+            <div style={{ color: 'var(--muted)', fontSize: 13 }}>Vue globale: agents · interventions · rapports · équipements</div>
+          </header>
+
+          <div className="kpi-grid">
+            <div className="kpi-card">
+              <div className="kpi-label">Interventions</div>
+              <div className="row-between">
+                <div className="kpi-value">{kpis.totalInterv}</div>
+                <div className="kpi-trend">{kpis.done} terminées</div>
+              </div>
+              <Progress value={(kpis.done / Math.max(1, kpis.totalInterv)) * 100} />
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-label">En cours</div>
+              <div className="row-between">
+                <div className="kpi-value">{kpis.enCours}</div>
+                <div className="badge badge-warn">Urgence moyenne {kpis.urgenceMoy}/5</div>
+              </div>
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-label">Agents disponibles</div>
+              <div className="row-between">
+                <div className="kpi-value">{kpis.dispoAgents}</div>
+                <div className="badge badge-ok">Sur {AGENTS.length}</div>
+              </div>
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-label">Équipements libres</div>
+              <div className="row-between">
+                <div className="kpi-value">{kpis.equipDispo}</div>
+                <div className="badge badge-ok">Total {EQUIPEMENTS.length}</div>
+              </div>
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-label">Coût cumulé rapports</div>
+              <div className="row-between">
+                <div className="kpi-value">{kpis.coutTotal} dt</div>
+                <div className="kpi-trend">Budget sous contrôle</div>
+              </div>
+            </div>
+          </div>
+          <div className="tabs">
+            <button className={`tab-btn ${activeSection === 'interventions' ? 'active' : ''}`} onClick={() => setActiveSection('interventions')}>Interventions</button>
+            <button className={`tab-btn ${activeSection === 'agents' ? 'active' : ''}`} onClick={() => setActiveSection('agents')}>Agents</button>
+            <button className={`tab-btn ${activeSection === 'rapports' ? 'active' : ''}`} onClick={() => setActiveSection('rapports')}>Rapports</button>
+            <button className={`tab-btn ${activeSection === 'equipements' ? 'active' : ''}`} onClick={() => setActiveSection('equipements')}>Équipements</button>
+            <button className={`tab-btn ${activeSection === 'citoyens' ? 'active' : ''}`} onClick={() => setActiveSection('citoyens')}>Citoyens</button>
+          </div>
+        {activeSection === 'citoyens' && (
+            <div className="panel">
+              <div className="panel-header"><span>Citoyens</span><span>{CITIZENS.length} inscrits</span></div>
+              <div className="list">
+                {CITIZENS.map((citizen) => (
+                  <div key={citizen.cin} className="card-item" style={{ gridTemplateColumns: '1fr auto' }}>
+                    <div>
+                      <div className="title">{citizen.nom} {citizen.prenom}</div>
+                      <div className="meta">CIN {citizen.cin} · {citizen.email}</div>
+                      <div className="meta">Adresse : {citizen.adresse}</div>
+                      <div className="meta">Rue : {citizen.rue}</div>
+                    </div>
+                    <span className="badge badge-ok">Citoyen</span>
+                  </div>
+                ))}
+                {CITIZENS.length === 0 && <div className="empty">Aucun citoyen enregistré.</div>}
+              </div>
+            </div>
+          )}
+
+          {activeSection === 'interventions' && (
+            <div className="panel">
+              <div className="panel-header"><span>Interventions</span><span>{INTERVENTIONS.length} suivies</span></div>
+              <div className="list">
+                {INTERVENTIONS.map((i) => (
+                  <div
+                    key={i.id}
+                    className="card-item"
+                    onClick={() => setSelectedIntervention(i)}
+                    style={{ cursor: 'pointer', borderColor: selectedIntervention?.id === i.id ? 'var(--accent)' : undefined }}
+                  >
+                    <div>
+                      <div className="title">#{i.id} · {i.type}</div>
+                      <div className="meta">{i.localisation} · Agent {i.agent}</div>
+                      <Progress value={i.etat} />
+                    </div>
+                    <div style={{ display: 'grid', gap: 6, justifyItems: 'end' }}>
+                      <BadgeEtat value={i.etat} />
+                      <span className="meta">Urgence {i.urgence}/5</span>
+                    </div>
+                  </div>
+                ))}
+                {INTERVENTIONS.length === 0 && <div className="empty">Aucune intervention.</div>}
+              </div>
+
+              <div className="panel" style={{ marginTop: 12 }}>
+                <div className="panel-header"><span>Détail intervention</span><span>{selectedIntervention ? `#${selectedIntervention.id}` : ''}</span></div>
+                {selectedIntervention ? (
+                  <div className="list">
+                    <div className="card-item" style={{ gridTemplateColumns: '1fr' }}>
+                      <div className="title">{selectedIntervention.type}</div>
+                      <div className="meta">Localisation: {selectedIntervention.localisation}</div>
+                      <div className="meta">Agent affecté: {selectedIntervention.agent}</div>
+                      <div className="meta">Urgence: {selectedIntervention.urgence}/5</div>
+                      <div className="meta">Avancement:</div>
+                      <Progress value={selectedIntervention.etat} />
+                      <BadgeEtat value={selectedIntervention.etat} />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="empty">Appuyez sur une intervention pour voir le détail.</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeSection === 'agents' && (
+            <div className="panel">
+              <div className="panel-header"><span>Agents</span><span>{AGENTS.length} au total</span></div>
+              <div className="list">
+                {AGENTS.map((a) => (
+                  <div key={a.cin} className="card-item">
+                    <div>
+                      <div className="title">{a.nom}</div>
+                      <div className="meta">CIN {a.cin} · {a.service}</div>
+                    </div>
+                    <span className={`badge ${a.dispo ? 'badge-ok' : 'badge-danger'}`}>
+                      {a.dispo ? 'Disponible' : 'Occupé'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeSection === 'rapports' && (
+            <div className="panel">
+              <div className="panel-header"><span>Rapports</span><span>{RAPPORTS.length} reçus</span></div>
+              <div className="list">
+                {RAPPORTS.map((r) => (
+                  <div
+                    key={r.id}
+                    className="card-item"
+                    onClick={() => setSelectedRapport(r)}
+                    style={{ cursor: 'pointer', borderColor: selectedRapport?.id === r.id ? 'var(--accent)' : undefined }}
+                  >
+                    <div>
+                      <div className="title">Rapport #{r.id}</div>
+                      <div className="meta">Intervention #{r.interventionRef} · Agent {r.cinAgent}</div>
+                      <div className="meta">Durée {r.duree} · Coût {r.cout} dt</div>
+                      <div className="meta">{r.description}</div>
+                    </div>
+                  </div>
+                ))}
+                {RAPPORTS.length === 0 && <div className="empty">Aucun rapport.</div>}
+              </div>
+
+              <div className="panel" style={{ marginTop: 12 }}>
+                <div className="panel-header"><span>Détail rapport</span><span>{selectedRapport ? `#${selectedRapport.id}` : ''}</span></div>
+                {selectedRapport ? (
+                  <div className="list">
+                    <div className="card-item" style={{ gridTemplateColumns: '1fr' }}>
+                      <div className="title">Rapport #{selectedRapport.id}</div>
+                      <div className="meta">Intervention: #{selectedRapport.interventionRef}</div>
+                      <div className="meta">Agent: {selectedRapport.cinAgent}</div>
+                      <div className="meta">Durée: {selectedRapport.duree}</div>
+                      <div className="meta">Coût: {selectedRapport.cout} dt</div>
+                      <div className="meta">Description: {selectedRapport.description}</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="empty">Appuyez sur un rapport pour voir le détail.</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeSection === 'equipements' && (
+            <div className="panel">
+              <div className="panel-header"><span>Équipements</span><span>{EQUIPEMENTS.length} items</span></div>
+              <div className="list">
+                {EQUIPEMENTS.map((e) => (
+                  <div key={e.id} className="card-item">
+                    <div>
+                      <div className="title">{e.nom}</div>
+                      <div className="meta">ID {e.id}</div>
+                    </div>
+                    <span className={`badge ${e.disponible ? 'badge-ok' : 'badge-danger'}`}>
+                      {e.disponible ? 'Disponible' : 'Mobilisé'}
+                    </span>
+                  </div>
+                ))}
+                {EQUIPEMENTS.length === 0 && <div className="empty">Aucun équipement.</div>}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

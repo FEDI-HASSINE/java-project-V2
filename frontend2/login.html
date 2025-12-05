@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connexion - Maquette</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: rgba(255, 255, 255, 0.06);
+      --panel-strong: rgba(255, 255, 255, 0.12);
+      --accent: #7c3aed;
+      --accent-2: #22d3ee;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --danger: #f87171;
+      --shadow: 0 20px 80px rgba(0,0,0,0.45);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at 10% 20%, rgba(124,58,237,0.18), transparent 35%),
+                  radial-gradient(circle at 80% 0%, rgba(34,211,238,0.16), transparent 30%),
+                  radial-gradient(circle at 50% 80%, rgba(124,58,237,0.12), transparent 40%),
+                  var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+
+    .card {
+      width: min(420px, 90vw);
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before, .card::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(40px);
+      opacity: 0.35;
+      z-index: 0;
+    }
+
+    .card::before {
+      width: 220px; height: 220px;
+      background: var(--accent);
+      top: -120px; right: -100px;
+    }
+
+    .card::after {
+      width: 180px; height: 180px;
+      background: var(--accent-2);
+      bottom: -90px; left: -80px;
+    }
+
+    .content { position: relative; z-index: 1; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--panel-strong);
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 28px;
+      letter-spacing: -0.4px;
+    }
+
+    .muted { color: var(--muted); font-size: 14px; margin-bottom: 22px; }
+
+    form { display: flex; flex-direction: column; gap: 14px; }
+
+    label { font-size: 13px; color: var(--muted); letter-spacing: 0.2px; }
+
+    .input {
+      width: 100%;
+      padding: 14px 14px 14px 46px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .field { position: relative; }
+
+    .field-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 16px;
+      pointer-events: none;
+    }
+
+    .input:focus {
+      border-color: rgba(124,58,237,0.8);
+      box-shadow: 0 0 0 4px rgba(124,58,237,0.16);
+    }
+
+    .input.error { border-color: var(--danger); box-shadow: 0 0 0 4px rgba(248,113,113,0.2); }
+
+    .helper { color: var(--danger); font-size: 12px; margin-top: 4px; min-height: 16px; }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+
+    .remember {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .link { color: var(--accent-2); font-size: 13px; text-decoration: none; }
+    .link:hover { text-decoration: underline; }
+
+    .button {
+      width: 100%;
+      padding: 14px 16px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      color: #0b1120;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+      box-shadow: 0 10px 30px rgba(124,58,237,0.35);
+    }
+
+    .button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .button:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 14px 40px rgba(124,58,237,0.45); }
+
+    .note {
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .chips { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+
+    .chip {
+      padding: 6px 10px;
+      border-radius: 10px;
+      background: var(--panel-strong);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text);
+      font-size: 12px;
+      letter-spacing: 0.2px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useMemo, useEffect } = React;
+
+    function LoginPage() {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [remember, setRemember] = useState(true);
+      const [touched, setTouched] = useState({ email: false, password: false });
+      const [mode, setMode] = useState('login');
+      const [loading, setLoading] = useState(false);
+      const [errorMessage, setErrorMessage] = useState('');
+
+      const [citizenData, setCitizenData] = useState({
+        cin: '',
+        email: '',
+        password: '',
+        nom: '',
+        prenom: '',
+        adresse: '',
+        rue: ''
+      });
+      const [signupTouched, setSignupTouched] = useState({});
+
+      const computeCandidateApiBases = () => {
+        const candidates = new Set();
+        const { protocol, host, hostname, origin } = window.location;
+        const sanitize = (value) => value.replace(/\/$/, '');
+        const ensureProtocol = (value) => {
+          if (/^https?:\/\//i.test(value)) {
+            return sanitize(value);
+          }
+          return sanitize(`${protocol}//${value}`);
+        };
+
+        if (window.API_BASE_URL) {
+          const provided = String(window.API_BASE_URL).trim();
+          if (provided) {
+            try {
+              const override = new URL(provided);
+              if (override.origin !== origin) {
+                candidates.add(override.origin.replace(/\/$/, ''));
+              }
+            } catch (error) {
+              console.warn('API_BASE_URL invalide, ignoré :', provided, error);
+            }
+          }
+        }
+
+        const normalizedHost = hostname.replace(/\.$/, '');
+        const hostWithoutPort = normalizedHost.includes(':') ? normalizedHost.split(':')[0] : normalizedHost;
+        if (hostWithoutPort) {
+          candidates.add(`${protocol}//${hostWithoutPort}:8080`);
+        }
+        candidates.add(`${protocol}//localhost:8080`);
+        candidates.add(`${protocol}//127.0.0.1:8080`);
+
+        if (hostWithoutPort === '0.0.0.0') {
+          candidates.add(`${protocol}//127.0.0.1:8080`);
+        }
+
+        const codespaceMatch = hostname.match(/^(?<name>.+?)-(?<port>\d+)\.(?<domain>(?:app|preview)\.github\.dev)$/);
+        if (codespaceMatch?.groups) {
+          const { name, domain } = codespaceMatch.groups;
+          candidates.add(`${protocol}//${name}-8080.${domain}`);
+          candidates.add(`${protocol}//${name}--8080.${domain}`);
+        }
+
+        const sanitized = Array.from(candidates)
+          .map((candidate) => candidate.replace(/^https?:\/:\/\//, (match) => match.toLowerCase()))
+          .map((candidate) => ensureProtocol(candidate))
+          .filter((value) => {
+            try {
+              const url = new URL(value);
+              return Boolean(url.hostname);
+            } catch {
+              return false;
+            }
+          });
+
+        return Array.from(new Set(sanitized));
+      };
+
+      const candidateApiBases = useMemo(computeCandidateApiBases, []);
+
+      useEffect(() => {
+        console.debug('Candidats API détectés:', candidateApiBases);
+      }, [candidateApiBases]);
+
+      const emailValid = /.+@.+\..+/.test(email.trim());
+      const passwordValid = password.trim().length >= 6;
+      const formValid = emailValid && passwordValid;
+
+      const ROLE_ROUTES = {
+        citoyen: 'citoyen.html',
+        agent: 'agent.html',
+        secretaire: 'secretaire.html',
+        chef: 'chef.html',
+        chefinfo: 'chef-informatique.html'
+      };
+
+      const onSubmit = async (e) => {
+        e.preventDefault();
+        setTouched({ email: true, password: true });
+        if (!formValid) {
+          setErrorMessage('');
+          return;
+        }
+
+        setLoading(true);
+        setErrorMessage('');
+
+        try {
+            const payloadBody = JSON.stringify({
+              email: email.trim(),
+              password
+            });
+
+          let lastError = null;
+          let lastResponseBody = '';
+          let token = null;
+          let resolvedBase = null;
+
+          for (const base of candidateApiBases) {
+            const endpoint = `${base}/auth/login`;
+            console.debug('Tentative de connexion via', endpoint);
+            try {
+              const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: payloadBody,
+                mode: 'cors',
+                credentials: 'include'
+              });
+
+              if (!response.ok) {
+                lastResponseBody = await response.text().catch(() => '');
+                lastError = new Error(`HTTP_${response.status}`);
+                lastError.details = lastResponseBody;
+                continue;
+              }
+
+              const payload = await response.json();
+              token = payload?.token;
+              resolvedBase = base;
+              break;
+            } catch (error) {
+              lastError = error;
+              lastResponseBody = String(error.message || '');
+            }
+          }
+
+          if (!token) {
+            const failure = new Error('LOGIN_FAILED');
+            failure.cause = lastError;
+            failure.details = lastResponseBody;
+            failure.candidates = candidateApiBases;
+            throw failure;
+          }
+
+          console.debug('Connexion réussie via', resolvedBase);
+
+          if (remember) {
+            localStorage.setItem('municipaliteToken', token);
+            sessionStorage.removeItem('municipaliteToken');
+          } else {
+            sessionStorage.setItem('municipaliteToken', token);
+            localStorage.removeItem('municipaliteToken');
+          }
+
+          const segments = token.split('.');
+          if (segments.length < 2) {
+            throw new Error('TOKEN_FORMAT');
+          }
+
+          const base64Payload = segments[1];
+          const normalized = base64Payload.replace(/-/g, '+').replace(/_/g, '/');
+          const padded = normalized.padEnd(normalized.length + (4 - normalized.length % 4) % 4, '=');
+          const decoded = JSON.parse(atob(padded));
+          const role = (decoded?.role || '').toLowerCase();
+
+          const target = ROLE_ROUTES[role];
+          if (target) {
+            window.location.href = target;
+          } else {
+            setErrorMessage("Rôle inconnu, contactez l'administrateur.");
+          }
+        } catch (error) {
+          console.error('Échec de la connexion', error);
+          localStorage.removeItem('municipaliteToken');
+          sessionStorage.removeItem('municipaliteToken');
+          if (error.message === 'LOGIN_FAILED') {
+            if (error.cause?.message?.startsWith('HTTP_401')) {
+              setErrorMessage('Vérifiez vos informations personnelles');
+            } else {
+              setErrorMessage("Connexion impossible. Vérifiez l'API (voir console pour le détail).");
+            }
+          } else {
+            setErrorMessage("Impossible de contacter le serveur d'authentification");
+          }
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const onSignupSubmit = (e) => {
+        e.preventDefault();
+        setSignupTouched({
+          cin: true,
+          email: true,
+          password: true,
+          nom: true,
+          prenom: true,
+          adresse: true,
+          rue: true
+        });
+
+        const validations = {
+          cin: /^\d{8}$/.test(citizenData.cin.trim()),
+          email: /.+@.+\..+/.test(citizenData.email.trim()),
+          password: citizenData.password.trim().length >= 6,
+          nom: citizenData.nom.trim().length > 0,
+          prenom: citizenData.prenom.trim().length > 0,
+          adresse: citizenData.adresse.trim().length > 0,
+          rue: citizenData.rue.trim().length > 0
+        };
+
+        const allValid = Object.values(validations).every(Boolean);
+        if (!allValid) {
+          return;
+        }
+
+        console.log('Création de compte simulée', citizenData);
+        alert('Création de compte simulée (maquette)');
+      };
+
+      const renderLogin = () => (
+        <>
+          <div className="pill">Accès sécurisé</div>
+          <h1>Connexion</h1>
+          <p className="muted">Entrez vos identifiants pour accéder à votre espace.</p>
+
+          <form onSubmit={onSubmit} noValidate>
+              <div className="field">
+                <label>Email</label>
+                <span className="field-icon">@</span>
+                <input
+                  className={`input ${touched.email && !emailValid ? 'error' : ''}`}
+                  type="email"
+                  placeholder="prenom.nom@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onBlur={() => setTouched((t) => ({ ...t, email: true }))}
+                  autoComplete="email"
+                />
+                <div className="helper">
+                  {touched.email && !emailValid ? 'Email invalide' : ''}
+                </div>
+              </div>
+
+              <div className="field">
+                <label>Mot de passe</label>
+                <span className="field-icon">• • •</span>
+                <input
+                  className={`input ${touched.password && !passwordValid ? 'error' : ''}`}
+                  type="password"
+                  placeholder="Au moins 6 caractères"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onBlur={() => setTouched((t) => ({ ...t, password: true }))}
+                  autoComplete="current-password"
+                />
+                <div className="helper">
+                  {touched.password && !passwordValid ? 'Minimum 6 caractères' : ''}
+                </div>
+              </div>
+
+              <div className="actions">
+                <label className="remember">
+                  <input
+                    type="checkbox"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
+                  />
+                  Se souvenir de moi
+                </label>
+                <a className="link" href="#">Mot de passe oublié ?</a>
+              </div>
+
+              <button className="button" type="submit" disabled={!formValid || loading}>
+                {loading ? 'Connexion…' : 'Se connecter'}
+              </button>
+              <div className="helper" style={{ textAlign: 'center' }}>
+                {errorMessage}
+              </div>
+            </form>
+              <div className="note">
+                Pas encore de compte ?{' '}
+                <a
+                  className="link"
+                  href="#"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    setMode('signup');
+                    setErrorMessage('');
+                  }}
+                >
+                  Créer un compte
+                </a>
+              </div>
+        </>
+      );
+
+      const renderSignup = () => {
+        const helpers = {
+          cin: signupTouched.cin && !/^\d{8}$/.test(citizenData.cin.trim()) ? 'Le CIN doit contenir 8 chiffres' : '',
+          email: signupTouched.email && !/.+@.+\..+/.test(citizenData.email.trim()) ? 'Email invalide' : '',
+          password: signupTouched.password && citizenData.password.trim().length < 6 ? 'Minimum 6 caractères' : '',
+          nom: signupTouched.nom && !citizenData.nom.trim() ? 'Nom obligatoire' : '',
+          prenom: signupTouched.prenom && !citizenData.prenom.trim() ? 'Prénom obligatoire' : '',
+          adresse: signupTouched.adresse && !citizenData.adresse.trim() ? 'Adresse obligatoire' : '',
+          rue: signupTouched.rue && !citizenData.rue.trim() ? 'Rue obligatoire' : ''
+        };
+
+        const onChange = (field) => (event) => {
+          const value = event.target.value;
+          setCitizenData((prev) => ({ ...prev, [field]: value }));
+        };
+
+        return (
+          <>
+            <div className="pill">Nouveau citoyen</div>
+            <h1>Créer un compte</h1>
+            <p className="muted">Remplissez le formulaire pour demander la création d'un compte citoyen.</p>
+            <form onSubmit={onSignupSubmit} noValidate>
+              <div className="field">
+                <label>CIN</label>
+                <span className="field-icon">ID</span>
+                <input
+                  className={`input ${helpers.cin ? 'error' : ''}`}
+                  type="text"
+                  placeholder="8 chiffres"
+                  value={citizenData.cin}
+                  onChange={onChange('cin')}
+                  onBlur={() => setSignupTouched((prev) => ({ ...prev, cin: true }))}
+                />
+                <div className="helper">{helpers.cin}</div>
+              </div>
+
+              <div className="field">
+                <label>Email</label>
+                <span className="field-icon">@</span>
+                <input
+                  className={`input ${helpers.email ? 'error' : ''}`}
+                  type="email"
+                  placeholder="prenom.nom@email.com"
+                  value={citizenData.email}
+                  onChange={onChange('email')}
+                  onBlur={() => setSignupTouched((prev) => ({ ...prev, email: true }))}
+                  autoComplete="email"
+                />
+                <div className="helper">{helpers.email}</div>
+              </div>
+
+              <div className="field">
+                <label>Mot de passe</label>
+                <span className="field-icon">• • •</span>
+                <input
+                  className={`input ${helpers.password ? 'error' : ''}`}
+                  type="password"
+                  placeholder="Au moins 6 caractères"
+                  value={citizenData.password}
+                  onChange={onChange('password')}
+                  onBlur={() => setSignupTouched((prev) => ({ ...prev, password: true }))}
+                  autoComplete="new-password"
+                />
+                <div className="helper">{helpers.password}</div>
+              </div>
+
+              <div className="field">
+                <label>Nom</label>
+                <span className="field-icon">N</span>
+                <input
+                  className={`input ${helpers.nom ? 'error' : ''}`}
+                  type="text"
+                  placeholder="Votre nom"
+                  value={citizenData.nom}
+                  onChange={onChange('nom')}
+                  onBlur={() => setSignupTouched((prev) => ({ ...prev, nom: true }))}
+                />
+                <div className="helper">{helpers.nom}</div>
+              </div>
+
+              <div className="field">
+                <label>Prénom</label>
+                <span className="field-icon">P</span>
+                <input
+                  className={`input ${helpers.prenom ? 'error' : ''}`}
+                  type="text"
+                  placeholder="Votre prénom"
+                  value={citizenData.prenom}
+                  onChange={onChange('prenom')}
+                  onBlur={() => setSignupTouched((prev) => ({ ...prev, prenom: true }))}
+                />
+                <div className="helper">{helpers.prenom}</div>
+              </div>
+
+              <div className="field">
+                <label>Adresse</label>
+                <span className="field-icon">📍</span>
+                <input
+                  className={`input ${helpers.adresse ? 'error' : ''}`}
+                  type="text"
+                  placeholder="Adresse complète"
+                  value={citizenData.adresse}
+                  onChange={onChange('adresse')}
+                  onBlur={() => setSignupTouched((prev) => ({ ...prev, adresse: true }))}
+                />
+                <div className="helper">{helpers.adresse}</div>
+              </div>
+
+              <div className="field">
+                <label>Rue</label>
+                <span className="field-icon">🏠</span>
+                <input
+                  className={`input ${helpers.rue ? 'error' : ''}`}
+                  type="text"
+                  placeholder="Rue"
+                  value={citizenData.rue}
+                  onChange={onChange('rue')}
+                  onBlur={() => setSignupTouched((prev) => ({ ...prev, rue: true }))}
+                />
+                <div className="helper">{helpers.rue}</div>
+              </div>
+
+              <button className="button" type="submit">
+                Valider la demande
+              </button>
+            </form>
+
+            <div className="note">
+              Déjà un compte ?{' '}
+              <a
+                className="link"
+                href="#"
+                onClick={(event) => {
+                  event.preventDefault();
+                  setMode('login');
+                  setErrorMessage('');
+                }}
+              >
+                Revenir à la connexion
+              </a>
+            </div>
+          </>
+        );
+      };
+
+      return (
+        <main className="card">
+          <div className="content">
+            {mode === 'login' ? renderLogin() : renderSignup()}
+          </div>
+        </main>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<LoginPage />);
+  </script>
+</body>
+</html>
