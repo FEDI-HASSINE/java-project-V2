@@ -234,32 +234,26 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script type="text/babel">
-    const { useState } = React;
+    const { useState, useEffect } = React;
 
-    // Jeu de données statique pour la maquette
-    const DEMANDES_MOCK = [
-      {
-        identifiant: 101,
-        citoyenRef: '12345678',
-        dateDeSoumission: '2025-02-14',
-        image: '(binaire)',
-        localisation: 'Rue des Jasmins, Tunis',
-        etat: 'en attente'
-      },
-      {
-        identifiant: 102,
-        citoyenRef: '12345678',
-        dateDeSoumission: '2025-02-10',
-        image: '(binaire)',
-        localisation: 'Avenue Habib Bourguiba',
-        etat: 'en attente'
+    // Helper pour décoder le token
+    function parseJwt(token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+      } catch (e) {
+        return null;
       }
-    ];
+    }
 
-    const NOTIFS_MOCK = [
-      { idN: 1, citoyenRef: '12345678', contenue: 'Votre demande est acceptée.' },
-      { idN: 2, citoyenRef: '12345678', contenue: 'Votre demande est acceptée.' }
-    ];
+    // Configuration API
+    const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:8080'
+      : `https://${window.location.hostname.replace('-8000', '-8080')}`;
 
     function Pill({ text, tone = 'pending' }) {
       const cls = tone === 'success' ? 'badge badge-success' : 'badge badge-pending';
@@ -290,13 +284,43 @@
     }
 
     function DemandeDetail({ demande }) {
+      const [showImage, setShowImage] = useState(false);
+
+      useEffect(() => {
+        setShowImage(false);
+      }, [demande]);
+
       if (!demande) return <div className="empty">Sélectionnez une demande pour voir les détails.</div>;
+      
+      const hasImage = demande.image && demande.image.length > 0 && demande.image !== '(binaire)';
+
       return (
         <div className="detail">
           <div className="title">Demande #{demande.identifiant}</div>
           <div className="detail-row"><span>Date de soumission</span><span>{demande.dateDeSoumission}</span></div>
           <div className="detail-row"><span>Localisation</span><span>{demande.localisation}</span></div>
-          <div className="detail-row"><span>Image</span><span>{demande.image ? 'Pièce jointe' : 'Aucune'}</span></div>
+          <div className="detail-row">
+            <span>Image</span>
+            <span>
+                {hasImage ? (
+                    <span 
+                        style={{color: 'var(--accent)', cursor: 'pointer', textDecoration: 'underline'}}
+                        onClick={() => setShowImage(!showImage)}
+                    >
+                        {showImage ? 'Masquer la pièce jointe' : 'Voir la pièce jointe'}
+                    </span>
+                ) : 'Aucune'}
+            </span>
+          </div>
+          {showImage && hasImage && (
+            <div style={{ marginTop: 12, textAlign: 'center' }}>
+              <img 
+                src={`data:image/jpeg;base64,${demande.image}`} 
+                alt="Preuve" 
+                style={{ maxWidth: '100%', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }} 
+              />
+            </div>
+          )}
         </div>
       );
     }
@@ -329,40 +353,136 @@
     }
 
     function App() {
-      const [demandes, setDemandes] = useState(DEMANDES_MOCK);
-      const [selected, setSelected] = useState(DEMANDES_MOCK[0]);
+      const [demandes, setDemandes] = useState([]);
+      const [selected, setSelected] = useState(null);
       const [showCreate, setShowCreate] = useState(false);
       const [showNotifs, setShowNotifs] = useState(false);
-      const [notifs, setNotifs] = useState(NOTIFS_MOCK);
+      const [notifs, setNotifs] = useState([]);
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState('');
 
       const [form, setForm] = useState({
         localisation: '',
         imageBase64: ''
       });
 
-      const handleDeleteDemande = (id) => {
-        setDemandes((prev) => prev.filter((d) => d.identifiant !== id));
-        if (selected && selected.identifiant === id) setSelected(null);
+      const token = sessionStorage.getItem('municipaliteToken') || localStorage.getItem('municipaliteToken');
+      const user = token ? parseJwt(token) : null;
+
+      useEffect(() => {
+        if (!token) {
+          window.location.href = 'login.html';
+          return;
+        }
+        fetchDemandes();
+        fetchNotifications();
+      }, [token]);
+
+      const fetchDemandes = async () => {
+        setLoading(true);
+        try {
+          const response = await fetch(`${API_BASE_URL}/demandes`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setDemandes(data);
+            if (data.length > 0) setSelected(data[0]);
+          } else {
+            console.error('Erreur chargement demandes');
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
       };
 
-      const handleDeleteNotif = (idN) => {
-        setNotifs((prev) => prev.filter((n) => n.idN !== idN));
+      const fetchNotifications = async () => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/notifications`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setNotifs(data);
+          }
+        } catch (err) {
+          console.error('Erreur chargement notifications', err);
+        }
       };
 
-      const handleCreate = (e) => {
+      const handleDeleteDemande = async (id) => {
+        if (!confirm('Voulez-vous vraiment supprimer cette demande ?')) return;
+        try {
+          const response = await fetch(`${API_BASE_URL}/demandes/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (response.ok) {
+            setDemandes((prev) => prev.filter((d) => d.identifiant !== id));
+            if (selected && selected.identifiant === id) setSelected(null);
+          } else {
+            alert('Erreur lors de la suppression');
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      };
+
+      const handleDeleteNotif = async (idN) => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/notifications/${idN}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (response.ok) {
+            setNotifs((prev) => prev.filter((n) => n.idN !== idN));
+          } else {
+            console.error('Erreur suppression notification');
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      };
+
+      const handleCreate = async (e) => {
         e.preventDefault();
-        const nextId = Math.max(0, ...demandes.map((d) => d.identifiant)) + 1;
-        const newDemande = {
-          identifiant: nextId,
-          citoyenRef: '',
-          dateDeSoumission: new Date().toISOString().slice(0,10),
-          image: form.imageBase64 ? '(binaire)' : '',
+        if (!user || !user.cin) {
+            alert("Erreur utilisateur: CIN manquant");
+            return;
+        }
+
+        const payload = {
+          citoyenCin: user.cin,
           localisation: form.localisation,
-          etat: 'en attente'
+          imageBase64: form.imageBase64 || ''
         };
-        setDemandes((prev) => [newDemande, ...prev]);
-        setSelected(newDemande);
-        setShowCreate(false);
+
+        try {
+          const response = await fetch(`${API_BASE_URL}/demandes/create`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (response.ok) {
+            const newDemande = await response.json();
+            setDemandes((prev) => [newDemande, ...prev]);
+            setSelected(newDemande);
+            setShowCreate(false);
+            setForm({ localisation: '', imageBase64: '' });
+          } else {
+            const errData = await response.json().catch(() => ({}));
+            alert('Erreur création: ' + (errData.message || response.statusText));
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Erreur réseau');
+        }
       };
 
       return (
@@ -414,8 +534,26 @@
                       onChange={(e) => setForm({ ...form, imageBase64: e.target.value })}
                       placeholder="Base64 (optionnel)"
                     />
+                    <input
+                      type="file"
+                      id="fileInput"
+                      style={{ display: 'none' }}
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            // Remove data:image/png;base64, prefix
+                            const base64 = reader.result.split(',')[1];
+                            setForm({ ...form, imageBase64: base64 });
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
                     <button type="button" className="icon-btn" title="Prendre une photo">📷</button>
-                    <button type="button" className="icon-btn" title="Uploader une image">⬆️</button>
+                    <button type="button" className="icon-btn" title="Uploader une image" onClick={() => document.getElementById('fileInput').click()}>⬆️</button>
                   </div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>

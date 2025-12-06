@@ -1,255 +1,192 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Espace Agent - Maquette</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #0c1224;
-      --panel: rgba(255,255,255,0.06);
-      --panel-strong: rgba(255,255,255,0.12);
-      --accent: #22d3ee;
-      --accent-2: #7c3aed;
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      --danger: #f87171;
-      --success: #4ade80;
-      --shadow: 0 20px 80px rgba(0,0,0,0.45);
-      --radius: 14px;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agent - Interventions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <style>
+      :root { --bg:#0b1220; --panel:#121a2b; --text:#e6eaf2; --muted:#a8b0c3; --accent:#6ea8fe; --danger:#ff6b6b; --success:#3ddc97; }
+      * { box-sizing: border-box; }
+      body { margin:0; font-family:'Inter',system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); }
+      .container { max-width:1100px; margin:0 auto; padding:24px; }
+      .header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+      .title { font-weight:700; font-size:20px; }
+      .panel { background:var(--panel); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px; }
+      .list { display:grid; grid-template-columns:1fr; gap:12px; }
+      .item { padding:12px; border:1px solid rgba(255,255,255,0.06); border-radius:10px; display:flex; align-items:center; justify-content:space-between; }
+      .btn { background:#1a2340; color:var(--text); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:8px 12px; cursor:pointer; }
+      .btn:hover { border-color:var(--accent); }
+      .btn-primary { background:#1a2a55; border-color:#315fb9; }
+      .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+      .detail-row { display:grid; grid-template-columns:280px 1fr; gap:8px; align-items:center; padding:8px 0; border-bottom:1px dashed rgba(255,255,255,0.06); }
+      .input { width:100%; padding:10px; background:#0d1426; color:var(--text); border:1px solid rgba(255,255,255,0.12); border-radius:8px; }
+      .muted { color:var(--muted); font-size:12px; }
+      .error { color:var(--danger); }
+      .success { color:var(--success); }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      const { useEffect, useState } = React;
 
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
-      color: var(--text);
-      background: radial-gradient(circle at 8% 18%, rgba(34,211,238,0.16), transparent 30%),
-                  radial-gradient(circle at 84% 10%, rgba(124,58,237,0.18), transparent 34%),
-                  radial-gradient(circle at 50% 80%, rgba(124,58,237,0.12), transparent 40%),
-                  var(--bg);
-      padding: 26px;
-    }
+      function getApiBase() {
+        const host = window.location.hostname;
+        const isCodespaces = host.includes("github.dev") || host.includes("githubpreview.dev") || host.includes("codespaces");
+        return isCodespaces ? `https://${host.replace(':8000','')}` : `http://localhost:8080`;
+      }
 
-    header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -0.2px; }
-    .brand-dot { width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(120deg, var(--accent), var(--accent-2)); box-shadow: 0 0 18px rgba(34,211,238,0.45); }
-
-    .layout { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 18px; }
-    .panel { background: var(--panel); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); backdrop-filter: blur(12px); }
-    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; color: var(--muted); font-size: 12px; letter-spacing: 0.4px; text-transform: uppercase; }
-
-    .list { display: flex; flex-direction: column; gap: 10px; }
-    .card-item { padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); background: var(--panel-strong); display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; cursor: pointer; transition: border 0.12s ease, transform 0.12s ease; }
-    .card-item:hover { border-color: var(--accent); transform: translateY(-1px); }
-    .title { font-weight: 600; letter-spacing: 0.1px; }
-    .meta { color: var(--muted); font-size: 13px; }
-
-    .detail { display: grid; gap: 10px; }
-    .detail-row { display: flex; justify-content: space-between; color: var(--muted); font-size: 13px; }
-    .detail-row span:last-child { color: var(--text); font-weight: 600; }
-    .empty { color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0; }
-
-    .progress-wrap { margin-top: 12px; }
-    .progress-bar { width: 100%; height: 10px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; }
-    .progress-fill { height: 100%; background: linear-gradient(120deg, var(--accent), var(--accent-2)); }
-
-    .btn { border: 1px solid rgba(255,255,255,0.14); color: var(--text); background: var(--panel); padding: 10px 14px; border-radius: var(--radius); cursor: pointer; font-weight: 600; letter-spacing: 0.1px; transition: transform 0.12s ease, box-shadow 0.12s ease, border 0.12s ease; backdrop-filter: blur(12px); }
-    .btn:hover { transform: translateY(-1px); border-color: var(--accent); box-shadow: 0 10px 28px rgba(34,211,238,0.25); }
-    .btn-primary { background: linear-gradient(120deg, var(--accent), var(--accent-2)); color: #0b1120; border: none; box-shadow: 0 12px 32px rgba(124,58,237,0.35); }
-    .btn-primary:hover { box-shadow: 0 16px 44px rgba(124,58,237,0.45); }
-
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: grid; place-items: center; z-index: 10; backdrop-filter: blur(4px); }
-    .modal { width: min(560px, 92vw); background: var(--panel); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
-    form { display: flex; flex-direction: column; gap: 12px; }
-    label { color: var(--muted); font-size: 13px; }
-    input, textarea { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); color: var(--text); outline: none; font-family: inherit; font-size: 14px; }
-    textarea { min-height: 100px; resize: vertical; }
-
-    @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } }
-  </style>
-</head>
-<body>
-  <div id="root"></div>
-
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <script type="text/babel">
-    const { useState, useMemo } = React;
-
-    const CIN_AGENT = '55556666';
-
-    const INTERVENTIONS_MOCK = [
-      { id: 301, budget: 12000, dateDebut: '2025-02-18', type: 'Urgent', urgence: 3, etat: 25, localisation: 'Rue du Lac', image: '(binaire)', cinAgent: CIN_AGENT, cinSecretaire: '' },
-      { id: 302, budget: 8000, dateDebut: '2025-02-10', type: 'Standard', urgence: 2, etat: 60, localisation: 'Avenue Carthage', image: '(binaire)', cinAgent: CIN_AGENT, cinSecretaire: '' },
-      { id: 303, budget: 5000, dateDebut: '2025-02-22', type: 'Urgent', urgence: 4, etat: 0, localisation: 'Boulevard Central', image: '(binaire)', cinAgent: CIN_AGENT, cinSecretaire: '' }
-    ];
-
-    function DemandesList({ interventions, onSelect }) {
-      if (!interventions.length) return <div className="empty">Aucune intervention affectée.</div>;
-      return (
-        <div className="list">
-          {interventions.map((i) => (
-            <div key={i.id} className="card-item" onClick={() => onSelect(i)}>
-              <div>
-                <div className="title">Intervention #{i.id}</div>
-                <div className="meta">{i.localisation} · {i.dateDebut}</div>
-              </div>
-              <div className="progress-wrap" style={{ width: 120 }}>
-                <div className="progress-bar">
-                  <div className="progress-fill" style={{ width: `${Math.min(100, i.etat)}%` }}></div>
-                </div>
-                <div className="meta" style={{ textAlign: 'right' }}>{i.etat}%</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    function DemandeDetail({ intervention, onUpdateProgress }) {
-      if (!intervention) return <div className="empty">Sélectionnez une intervention pour voir les détails.</div>;
-      return (
-        <div className="detail">
-          <div className="title">Intervention #{intervention.id}</div>
-          <div className="detail-row"><span>Budget</span><span>{intervention.budget}</span></div>
-          <div className="detail-row"><span>Date début</span><span>{intervention.dateDebut}</span></div>
-          <div className="detail-row"><span>Type</span><span>{intervention.type}</span></div>
-          <div className="detail-row"><span>Urgence</span><span>{intervention.urgence}</span></div>
-          <div className="detail-row"><span>Localisation</span><span>{intervention.localisation}</span></div>
-          <div className="detail-row"><span>Image</span><span>{intervention.image ? 'Pièce jointe' : 'Aucune'}</span></div>
-          <div className="progress-wrap">
-            <label style={{ color: 'var(--muted)', fontSize: 13 }}>Avancement (etat en %)</label>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={intervention.etat}
-              onChange={(e) => onUpdateProgress(Number(e.target.value))}
-            />
-            <div className="meta" style={{ textAlign: 'right' }}>{intervention.etat}%</div>
-          </div>
-        </div>
-      );
-    }
-
-    function Modal({ children, onClose }) {
-      return (
-        <div className="modal-backdrop" onClick={onClose}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            {children}
-          </div>
-        </div>
-      );
-    }
-
-    function RapportForm({ intervention, onSave, onCancel }) {
-      const [form, setForm] = useState({
-        duree: '',
-        description: ''
-      });
-
-      const handleSubmit = (e) => {
-        e.preventDefault();
-        const rapport = {
-          duree: Number(form.duree),
-          description: form.description,
-          image: '(binaire)',
-          interventionRef: intervention?.id || ''
-        };
-        onSave(rapport);
-      };
-
-      return (
-        <Modal onClose={onCancel}>
-          <h2>Rapport de travail</h2>
-          <form onSubmit={handleSubmit}>
-            <div>
-              <label>Durée (duree)</label>
-              <input value={form.duree} onChange={(e) => setForm({ ...form, duree: e.target.value })} required />
-            </div>
-            <div>
-              <label>Description (description)</label>
-              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
-            </div>
-            <div>
-              <label>Image (image)</label>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <button type="button" className="btn" style={{ padding: '10px 12px' }}>📷</button>
-                <button type="button" className="btn" style={{ padding: '10px 12px' }}>⬆️</button>
-              </div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <button type="button" className="btn" onClick={onCancel}>Annuler</button>
-              <button type="submit" className="btn-primary btn">Enregistrer</button>
-            </div>
-          </form>
-        </Modal>
-      );
-    }
-
-    function App() {
-      const [interventions, setInterventions] = useState(INTERVENTIONS_MOCK);
-      const [selected, setSelected] = useState(INTERVENTIONS_MOCK[0]);
-      const [showRapport, setShowRapport] = useState(false);
-
-      const interventionsForAgent = useMemo(() => interventions.filter((i) => i.cinAgent === CIN_AGENT), [interventions]);
-
-      const handleUpdateProgress = (value) => {
-        setInterventions((prev) => prev.map((i) => i.id === selected.id ? { ...i, etat: value } : i));
-        setSelected((prev) => prev ? { ...prev, etat: value } : prev);
-        if (value >= 100) {
-          setShowRapport(true);
+      async function fetchJSON(url, options={}) {
+        const resp = await fetch(url, options);
+        const contentType = resp.headers.get('content-type') || '';
+        if (!resp.ok) {
+          let message = `HTTP ${resp.status}`;
+          if (contentType.includes('application/json')) {
+            const data = await resp.json().catch(()=>null);
+            if (data && (data.message || data.error)) message += `: ${data.message||data.error}`;
+          } else {
+            const text = await resp.text().catch(()=>null);
+            if (text) message += `: ${text}`;
+          }
+          throw new Error(message);
         }
-      };
+        if (contentType.includes('application/json')) return resp.json();
+        return resp.text();
+      }
 
-      const handleSaveRapport = (rapport) => {
-        console.log('Rapport créé (maquette):', rapport);
-        setShowRapport(false);
-        if (!selected) return;
-        setInterventions((prev) => {
-          const next = prev.filter((i) => i.id !== selected.id);
-          setSelected(next.length ? next[0] : null);
-          return next;
-        });
-      };
+      function AgentApp() {
+        const [token, setToken] = useState(localStorage.getItem('token') || '');
+        const [interventions, setInterventions] = useState([]);
+        const [selected, setSelected] = useState(null);
+        const [loading, setLoading] = useState(false);
+        const [error, setError] = useState('');
+        const [success, setSuccess] = useState('');
 
-      return (
-        <div>
-          <header>
-            <div className="brand"><span className="brand-dot"></span> Espace Agent</div>
-          </header>
+        const API = getApiBase();
 
-          <div className="layout">
-            <div className="panel">
-              <div className="panel-header"><span>Interventions assignées</span><span>{interventionsForAgent.length}</span></div>
-              <DemandesList interventions={interventionsForAgent} onSelect={setSelected} />
+        useEffect(() => {
+          if (!token) {
+            setError('Token manquant. Veuillez vous connecter.');
+            return;
+          }
+          loadInterventions();
+        }, [token]);
+
+        async function loadInterventions() {
+          setLoading(true); setError('');
+          try {
+            let cin = null;
+            try {
+              const me = await fetchJSON(`${API}/agents/me`, { headers: { Authorization: `Bearer ${token}` } });
+              cin = (me && (me.cin || me.cinAgent || me.cin_agent)) || null;
+            } catch (e) {}
+
+            let data;
+            if (cin) {
+              data = await fetchJSON(`${API}/interventions/agent/${cin}`, { headers: { Authorization: `Bearer ${token}` } });
+            } else {
+              data = await fetchJSON(`${API}/interventions`, { headers: { Authorization: `Bearer ${token}` } });
+            }
+
+            const list = Array.isArray(data) ? data : (data && data.content) || [];
+            const filtered = cin ? list.filter(i => `${i.cinAgent}` === `${cin}`) : list;
+            setInterventions(filtered);
+            if (!selected && filtered.length > 0) setSelected(filtered[0]);
+          } catch (e) {
+            setError(e.message || String(e));
+          } finally {
+            setLoading(false);
+          }
+        }
+
+        async function updateEtat(interventionId, newEtat) {
+          setError(''); setSuccess('');
+          try {
+            await fetchJSON(`${API}/interventions/${interventionId}/etat`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+              },
+              body: JSON.stringify({ etat: Number(newEtat) })
+            });
+            setSuccess('État mis à jour avec succès');
+            await loadInterventions();
+            if (selected) {
+              const updated = (interventions || []).find(i => i.id === interventionId) || selected;
+              setSelected(updated);
+            }
+          } catch (e) {
+            setError(e.message || String(e));
+          }
+        }
+
+        return (
+          <div className="container">
+            <div className="header">
+              <div className="title">Espace Agent - Mes interventions</div>
+              <div className="muted">Connecté {token ? '✅' : '❌'}</div>
             </div>
-            <div className="panel">
-              <div className="panel-header"><span>Détails</span><span></span></div>
-              <DemandeDetail intervention={selected} onUpdateProgress={handleUpdateProgress} />
+
+            {error && <div className="error">{error}</div>}
+            {success && <div className="success">{success}</div>}
+
+            <div className="row">
+              <div className="panel">
+                <div className="muted" style={{ marginBottom: 8 }}>Sélectionnez une intervention</div>
+                <div className="list">
+                  {(interventions||[]).map(i => (
+                    <div key={i.id} className="item">
+                      <div>
+                        <div><strong>#{i.id}</strong> · {i.type} · Urgence: {i.urgence}</div>
+                        <div className="muted">Budget: {i.budget} · Début: {i.dateDebut}</div>
+                      </div>
+                      <button className="btn" onClick={() => setSelected(i)}>Voir</button>
+                    </div>
+                  ))}
+                  {(!interventions || interventions.length === 0) && (
+                    <div className="muted">Aucune intervention assignée.</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="panel">
+                <div className="title" style={{ marginBottom: 8 }}>Détails</div>
+                {!selected && <div className="muted">Sélectionnez une intervention à droite.</div>}
+                {selected && (
+                  <div>
+                    <div className="detail-row"><span>Id</span><span>{selected.id}</span></div>
+                    <div className="detail-row"><span>Type</span><span>{selected.type}</span></div>
+                    <div className="detail-row"><span>Urgence</span><span>{selected.urgence}</span></div>
+                    <div className="detail-row"><span>Budget</span><span>{selected.budget}</span></div>
+                    <div className="detail-row"><span>Date de début</span><span>{selected.dateDebut}</span></div>
+                    <div className="detail-row"><span>Localisation</span><span>{selected.localisation}</span></div>
+                    <div className="detail-row"><span>CIN Agent</span><span>{selected.cinAgent}</span></div>
+                    <div className="detail-row"><span>État</span>
+                      <span>
+                        <input className="input" type="number" min="0" max="10" value={selected.etat !== undefined && selected.etat !== null ? selected.etat : 0}
+                          onChange={(e) => setSelected({ ...selected, etat: Number(e.target.value) })} />
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                      <button className="btn btn-primary" onClick={() => updateEtat(selected.id, selected.etat)}>Enregistrer l'état</button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
+
           </div>
+        );
+      }
 
-          {showRapport && (
-            <RapportForm
-              intervention={selected}
-              onSave={handleSaveRapport}
-              onCancel={() => setShowRapport(false)}
-            />
-          )}
-        </div>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-  </script>
-</body>
+      ReactDOM.createRoot(document.getElementById('root')).render(<AgentApp />);
+    </script>
+  </body>
 </html>

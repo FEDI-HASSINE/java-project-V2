@@ -2,6 +2,7 @@ package com.project.XmlCrud.Controller;
 
 import com.project.XmlCrud.DTO.InterventionFromDemandeRequest;
 import com.project.XmlCrud.DTO.UpdateInterventionEtatRequest;
+import com.project.XmlCrud.DTO.UpdateInterventionRequest;
 import com.project.XmlCrud.Model.Intervention;
 import com.project.XmlCrud.Service.InterventionService;
 import jakarta.validation.Valid;
@@ -11,10 +12,13 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 public class InterventionController {
@@ -26,6 +30,14 @@ public class InterventionController {
 
     public InterventionController(InterventionService interventionService) {
         this.interventionService = interventionService;
+    }
+
+    @GetMapping("/interventions")
+    public List<Intervention> getAllInterventions(Authentication authentication) {
+        if (!hasAuthority(authentication, ROLE_SECRETAIRE)) {
+            throw new AccessDeniedException("Seule une secretaire peut voir toutes les interventions");
+        }
+        return interventionService.getAllInterventions();
     }
 
     @PostMapping("/demandes/{demandeId}/interventions")
@@ -59,6 +71,23 @@ public class InterventionController {
                 authentication.getName()
         );
 
+        return ResponseEntity.ok(updated);
+    }
+
+    @PostMapping("/interventions/{interventionId}/update")
+    public ResponseEntity<Intervention> updateIntervention(
+            @PathVariable Integer interventionId,
+            @Valid @RequestBody UpdateInterventionRequest request,
+            Authentication authentication) {
+        if (!hasAuthority(authentication, ROLE_SECRETAIRE)) {
+            throw new AccessDeniedException("Seule une secretaire peut modifier une intervention");
+        }
+
+        Intervention updated = interventionService.updateInterventionBySecretaire(
+                interventionId,
+                request,
+                authentication.getName()
+        );
         return ResponseEntity.ok(updated);
     }
 
