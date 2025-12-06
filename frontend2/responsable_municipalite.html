@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Espace Secrétaire - Maquette</title>
+  <title>Espace Responsable Municipalité - Maquette</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -283,7 +283,7 @@
             </div>
             <div>
               <label>Urgence</label>
-              <input type="number" value={form.urgence} onChange={(e) => setForm({ ...form, urgence: e.target.value })} required />
+              <input type="number" min="0" max="5" value={form.urgence} onChange={(e) => setForm({ ...form, urgence: e.target.value })} required />
             </div>
             <div>
               <label>État (lecture seule)</label>
@@ -397,7 +397,7 @@
           localisation: form.localisation,
           image: demande?.image || '',
           cinAgent: form.cinAgent,
-          cinSecretaire: ''
+          cinResponsableMunicipalite: ''
         };
         onSave(intervention);
       };
@@ -418,7 +418,7 @@
             </div>
             <div>
               <label>Urgence (urgence)</label>
-              <input type="number" value={form.urgence} onChange={(e) => setForm({ ...form, urgence: e.target.value })} required />
+              <input type="number" min="0" max="5" value={form.urgence} onChange={(e) => setForm({ ...form, urgence: e.target.value })} required />
             </div>
             <div>
               <label>Type (type)</label>
@@ -791,7 +791,7 @@
       return (
         <div>
           <header>
-            <div className="brand"><span className="brand-dot"></span> Espace Secrétaire</div>
+            <div className="brand"><span className="brand-dot"></span> Espace Responsable Municipalité</div>
             <div style={{display: 'flex', gap: 10}}>
                 <button className={`btn ${view === 'interventions' ? 'btn-primary' : ''}`} onClick={() => { setView('interventions'); setSelected(null); }}>Interventions</button>
                 <button className={`btn ${view === 'demandes' ? 'btn-primary' : ''}`} onClick={() => { setView('demandes'); setSelected(null); }}>Demandes</button>

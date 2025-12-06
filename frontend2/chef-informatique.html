@@ -64,7 +64,7 @@
     .actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: grid; place-items: center; z-index: 10; backdrop-filter: blur(4px); }
-    .modal { width: min(520px, 92vw); background: var(--panel); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
+    .modal { width: min(520px, 92vw); background: var(--panel); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); max-height: 90vh; overflow-y: auto; }
 
     form { display: flex; flex-direction: column; gap: 12px; }
     label { color: var(--muted); font-size: 13px; }
@@ -79,37 +79,37 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script type="text/babel">
-    const { useState, useMemo } = React;
+    const { useState, useEffect, useMemo } = React;
 
-    const MOCK = {
-      citoyens: [
-        { cin: '11112222', email: 'amine@example.com', password: 'pass123', nom: 'Amine', prenom: 'Ben Salah', role: 'citoyen', adresse: 'Rue du Lac', rue: 'Centre-ville' },
-        { cin: '33334444', email: 'syrine@example.com', password: 'pass123', nom: 'Syrine', prenom: 'Gharbi', role: 'citoyen', adresse: 'Avenue Carthage', rue: 'Centre-ville' },
-        { cin: '12345678', email: 'ahmed@example.com', password: 'pass123', nom: 'Ahmed', prenom: 'Ben Ali', role: 'citoyen', adresse: 'Rue de Tunis', rue: 'Centre-ville' }
-      ],
-      secretaires: [
-        { cin: '22223333', email: 'secretaire.updated@example.com', password: 'secret456', nom: 'Leila', prenom: 'Ghribi', service: 'Voirie' },
-        { cin: '44445555', email: 'malek@example.com', password: 'secret456', nom: 'Malek', prenom: 'A.', service: 'Eclairage' }
-      ],
-      agents: [
-        { cin: '55556666', nom: 'Agent Alpha', service: 'Voirie', dispo: true },
-        { cin: '77778888', nom: 'Agent Beta', service: 'Eclairage', dispo: true },
-        { cin: '12121212', nom: 'Agent Delta', service: 'Proprete', dispo: false }
-      ],
-      chefsInfo: [
-        { cin: '66667777', email: 'chefinf@example.com', password: 'infopass', nom: 'Foued', prenom: 'Maalej', role: 'chefinfo' },
-        { cin: '88889999', email: 'imen@ville.tn', password: 'pass123', nom: 'Imen', prenom: 'CIO', role: 'chefinfo' },
-        { cin: '10101010', email: 'karim@ville.tn', password: 'pass123', nom: 'Karim', prenom: 'Tech', role: 'chefinfo' }
-      ],
-      chefGeneral: { cin: '55556666', email: 'chefgen@example.com', password: 'chefpass', nom: 'Mohamed', prenom: 'Karoui', role: 'chef' }
-    };
+    function getApiBase() {
+        const host = window.location.hostname;
+        const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0';
+        if (isLocal) {
+            return 'http://localhost:8080';
+        }
+        const proto = window.location.protocol === 'https:' ? 'https' : 'http';
+        return `${proto}://${host.replace('-8000', '-8080')}`;
+    }
+
+    function parseJwt(token) {
+        try {
+          const base64Url = token.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+              return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+          }).join(''));
+          return JSON.parse(jsonPayload);
+        } catch (e) {
+          return null;
+        }
+    }
 
     const ROLE_CONFIG = {
-      citoyens: { label: 'Citoyens', canAdd: false, canEdit: true, canDelete: true },
-      secretaires: { label: 'Secrétaires', canAdd: true, canEdit: true, canDelete: true },
-      agents: { label: 'Agents', canAdd: true, canEdit: true, canDelete: true },
-      chefsInfo: { label: 'Chefs Informatique', canAdd: true, canEdit: true, canDelete: true },
-      chefGeneral: { label: 'Chef Général', canAdd: false, canEdit: true, canDelete: false }
+      citoyens: { label: 'Citoyens', canAdd: false, canEdit: true, canDelete: true, endpoint: '/citoyens' },
+      responsableMunicipalites: { label: 'Responsables Municipaux', canAdd: true, canEdit: true, canDelete: true, endpoint: '/responsableMunicipalites' },
+      agents: { label: 'Agents', canAdd: true, canEdit: true, canDelete: true, endpoint: '/agents' },
+      chefsInfo: { label: 'Chefs Informatique', canAdd: true, canEdit: true, canDelete: true, endpoint: '/chefs-informatiques' },
+      chefGeneral: { label: 'Chef Général', canAdd: false, canEdit: true, canDelete: false, endpoint: '/chefs-generaux' }
     };
 
     function Modal({ children, onClose }) {
@@ -129,26 +129,28 @@
 
       const fieldsByRole = {
         citoyens: [
-          { key: 'cin', label: 'CIN', required: true },
-          { key: 'email', label: 'Email', required: true },
-          { key: 'password', label: 'Mot de passe', required: true },
+          { key: 'cin', label: 'CIN', required: true, pattern: "\\d{8}", title: "8 chiffres" },
+          { key: 'email', label: 'Email', required: true, type: 'email' },
+          { key: 'password', label: 'Mot de passe', required: true, minLength: 6 },
           { key: 'nom', label: 'Nom', required: true },
           { key: 'prenom', label: 'Prénom', required: true },
           { key: 'role', label: 'Rôle', required: true },
           { key: 'adresse', label: 'Adresse', required: true },
           { key: 'rue', label: 'Rue', required: true }
         ],
-        secretaires: [
-          { key: 'cin', label: 'CIN', required: true },
-          { key: 'email', label: 'Email', required: true },
-          { key: 'password', label: 'Mot de passe', required: true },
+        responsableMunicipalites: [
+          { key: 'cin', label: 'CIN', required: true, pattern: "\\d{8}", title: "8 chiffres" },
+          { key: 'email', label: 'Email', required: true, type: 'email' },
+          { key: 'password', label: 'Mot de passe', required: true, minLength: 6 },
           { key: 'nom', label: 'Nom', required: true },
-          { key: 'prenom', label: 'Prénom', required: true },
-          { key: 'service', label: 'Service', required: true }
+          { key: 'prenom', label: 'Prénom', required: true }
         ],
         agents: [
-          { key: 'cin', label: 'CIN', required: true },
+          { key: 'cin', label: 'CIN', required: true, pattern: "\\d{8}", title: "8 chiffres" },
+          { key: 'email', label: 'Email', required: true, type: 'email' },
+          { key: 'password', label: 'Mot de passe', required: true, minLength: 6 },
           { key: 'nom', label: 'Nom', required: true },
+          { key: 'prenom', label: 'Prénom', required: true },
           { key: 'service', label: 'Service', required: true },
           { key: 'dispo', label: 'Disponible', type: 'select', options: [
             { value: true, label: 'Oui' },
@@ -156,24 +158,28 @@
           ] }
         ],
         chefsInfo: [
-          { key: 'cin', label: 'CIN', required: true },
-          { key: 'email', label: 'Email', required: true },
-          { key: 'password', label: 'Mot de passe', required: true },
+          { key: 'cin', label: 'CIN', required: true, pattern: "\\d{8}", title: "8 chiffres" },
+          { key: 'email', label: 'Email', required: true, type: 'email' },
+          { key: 'password', label: 'Mot de passe', required: true, minLength: 6 },
           { key: 'nom', label: 'Nom', required: true },
-          { key: 'prenom', label: 'Prénom', required: true },
-          { key: 'role', label: 'Rôle', required: true }
+          { key: 'prenom', label: 'Prénom', required: true }
         ],
         chefGeneral: [
-          { key: 'cin', label: 'CIN', required: true },
-          { key: 'email', label: 'Email', required: true },
-          { key: 'password', label: 'Mot de passe', required: true },
+          { key: 'cin', label: 'CIN', required: true, pattern: "\\d{8}", title: "8 chiffres" },
+          { key: 'email', label: 'Email', required: true, type: 'email' },
+          { key: 'password', label: 'Mot de passe', required: true, minLength: 6 },
           { key: 'nom', label: 'Nom', required: true },
           { key: 'prenom', label: 'Prénom', required: true },
           { key: 'role', label: 'Rôle', required: true }
         ]
       };
 
-      const fields = fieldsByRole[role] || [];
+      let fields = fieldsByRole[role] || [];
+      
+      // Filter out 'dispo' for agents in edit mode
+      if (role === 'agents' && initial) {
+        fields = fields.filter(f => f.key !== 'dispo');
+      }
 
       const submit = (e) => {
         e.preventDefault();
@@ -193,7 +199,16 @@
                   ))}
                 </select>
               ) : (
-                <input value={form[f.key] || ''} onChange={(e) => handleChange(f.key, e.target.value)} required={f.required} />
+                <input 
+                    type={f.type || 'text'} 
+                    value={form[f.key] || ''} 
+                    onChange={(e) => handleChange(f.key, e.target.value)} 
+                    required={initial && f.key === 'password' ? false : f.required} 
+                    placeholder={initial && f.key === 'password' ? "Laisser vide pour ne pas changer" : ""}
+                    pattern={f.pattern}
+                    minLength={f.minLength}
+                    title={f.title}
+                />
               )}
             </div>
           ))}
@@ -207,8 +222,8 @@
 
     function ListSection({ title, items, roleKey, onAdd, onEdit, onDelete }) {
       const cfg = ROLE_CONFIG[roleKey];
-      const isSingle = roleKey === 'chefGeneral';
-      const listItems = isSingle ? (items ? [items] : []) : items;
+      // chefGeneral is now a list from API
+      const listItems = items || [];
 
       return (
         <div className="panel">
@@ -229,11 +244,10 @@
                   {item.adresse && <div className="meta">Adresse: {item.adresse}</div>}
                   {item.rue && <div className="meta">Rue: {item.rue}</div>}
                   {item.dispo !== undefined && <div className="meta">Disponible: {item.dispo ? 'Oui' : 'Non'}</div>}
-                  {item.password && <div className="meta">Mot de passe: {item.password}</div>}
                 </div>
                 <div className="actions">
                   {cfg.canEdit && <button className="btn" onClick={() => onEdit(item)}>Modifier</button>}
-                  {cfg.canDelete && !isSingle && <button className="btn btn-danger" onClick={() => onDelete(item)}>Supprimer</button>}
+                  {cfg.canDelete && <button className="btn btn-danger" onClick={() => onDelete(item)}>Supprimer</button>}
                 </div>
               </div>
             ))}
@@ -244,60 +258,150 @@
 
     function App() {
       const [activeTab, setActiveTab] = useState('citoyens');
-      const [data, setData] = useState(MOCK);
+      const [data, setData] = useState({
+        citoyens: [],
+        responsableMunicipalites: [],
+        agents: [],
+        chefsInfo: [],
+        chefGeneral: []
+      });
       const [modalState, setModalState] = useState({ open: false, role: null, mode: 'create', current: null });
+
+      const token = sessionStorage.getItem('municipaliteToken') || localStorage.getItem('municipaliteToken');
+
+      useEffect(() => {
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+        const user = parseJwt(token);
+        if (!user || user.role !== 'chefinfo') {
+             // alert('Accès refusé');
+             // window.location.href = 'login.html';
+        }
+        loadAllData();
+      }, [token]);
+
+      const loadAllData = async () => {
+          const headers = { 'Authorization': `Bearer ${token}` };
+          const base = getApiBase();
+
+          try {
+              const [citoyens, responsableMunicipalites, agents, chefsInfo, chefGeneral] = await Promise.all([
+                  fetch(`${base}/citoyens`, { headers }).then(r => r.ok ? r.json() : []),
+                  fetch(`${base}/responsableMunicipalites`, { headers }).then(r => r.ok ? r.json() : []),
+                  fetch(`${base}/agents`, { headers }).then(r => r.ok ? r.json() : []),
+                  fetch(`${base}/chefs-informatiques`, { headers }).then(r => r.ok ? r.json() : []),
+                  fetch(`${base}/chefs-generaux`, { headers }).then(r => r.ok ? r.json() : [])
+              ]);
+
+              setData({
+                  citoyens,
+                  responsableMunicipalites,
+                  agents,
+                  chefsInfo,
+                  chefGeneral
+              });
+          } catch (e) {
+              console.error("Erreur chargement données", e);
+          }
+      };
 
       const openCreate = (role) => setModalState({ open: true, role, mode: 'create', current: null });
       const openEdit = (role, item) => setModalState({ open: true, role, mode: 'edit', current: item });
       const closeModal = () => setModalState({ open: false, role: null, mode: 'create', current: null });
 
-      const updateList = (role, updater) => {
-        setData((prev) => {
-          const next = { ...prev };
-          if (role === 'chefGeneral') {
-            next[role] = updater(prev[role]);
-          } else {
-            next[role] = updater(prev[role] || []);
-          }
-          return next;
-        });
-      };
-
-      const handleSubmit = (values) => {
+      const handleSubmit = async (values) => {
         const role = modalState.role;
         if (!role) return;
-        if (role === 'chefGeneral') {
-          updateList(role, () => values);
-        } else if (modalState.mode === 'create') {
-          updateList(role, (list) => [...list, values]);
-        } else {
-          updateList(role, (list) => list.map((el) => el.cin === modalState.current.cin ? { ...el, ...values } : el));
+        
+        const cfg = ROLE_CONFIG[role];
+        const base = getApiBase();
+        const headers = { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        };
+
+        try {
+            let res;
+            if (modalState.mode === 'create') {
+                res = await fetch(`${base}${cfg.endpoint}`, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify(values)
+                });
+            } else {
+                res = await fetch(`${base}${cfg.endpoint}/${values.cin}`, {
+                    method: 'PUT',
+                    headers,
+                    body: JSON.stringify(values)
+                });
+            }
+
+            if (res.ok) {
+                loadAllData();
+                closeModal();
+            } else {
+                try {
+                    const errData = await res.json();
+                    console.error("Server error:", errData);
+                    alert('Erreur: ' + (errData.message || "Vérifiez vos données (CIN 8 chiffres, Email valide, etc.)"));
+                } catch (e) {
+                    alert('Erreur lors de l\'enregistrement');
+                }
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Erreur réseau');
         }
-        closeModal();
       };
 
-      const handleDelete = (role, item) => {
-        updateList(role, (list) => list.filter((el) => el.cin !== item.cin));
+      const handleDelete = async (role, item) => {
+        if (role === 'agents' && item.dispo === false) {
+            alert("Impossible de supprimer un agent non disponible.");
+            return;
+        }
+        if (!confirm('Êtes-vous sûr ?')) return;
+        
+        const cfg = ROLE_CONFIG[role];
+        const base = getApiBase();
+        const headers = { 'Authorization': `Bearer ${token}` };
+
+        try {
+            const res = await fetch(`${base}${cfg.endpoint}/${item.cin}`, {
+                method: 'DELETE',
+                headers
+            });
+
+            if (res.ok) {
+                loadAllData();
+            } else {
+                alert('Erreur lors de la suppression');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Erreur réseau');
+        }
       };
 
       const kpis = useMemo(() => ({
         citoyens: data.citoyens.length,
-        secretaires: data.secretaires.length,
+        responsableMunicipalites: data.responsableMunicipalites.length,
         agents: data.agents.length,
         chefsInfo: data.chefsInfo.length,
-        chefGeneral: data.chefGeneral ? 1 : 0
+        chefGeneral: data.chefGeneral.length
       }), [data]);
 
       return (
         <div>
           <header>
             <div className="brand"><span className="brand-dot"></span> Chef Informatique</div>
-            <div style={{ color: 'var(--muted)', fontSize: 13 }}>Gestion des comptes (ajout / modification / suppression selon rôle)</div>
+            <div style={{ color: 'var(--muted)', fontSize: 13 }}>Gestion des comptes</div>
           </header>
 
           <div className="kpi-grid">
             <div className="kpi-card"><div className="kpi-label">Citoyens</div><div className="kpi-value">{kpis.citoyens}</div></div>
-            <div className="kpi-card"><div className="kpi-label">Secrétaires</div><div className="kpi-value">{kpis.secretaires}</div></div>
+            <div className="kpi-card"><div className="kpi-label">Responsables Municipaux</div><div className="kpi-value">{kpis.responsableMunicipalites}</div></div>
             <div className="kpi-card"><div className="kpi-label">Agents</div><div className="kpi-value">{kpis.agents}</div></div>
             <div className="kpi-card"><div className="kpi-label">Chefs Info</div><div className="kpi-value">{kpis.chefsInfo}</div></div>
             <div className="kpi-card"><div className="kpi-label">Chef Général</div><div className="kpi-value">{kpis.chefGeneral}</div></div>
@@ -305,7 +409,7 @@
 
           <div className="tabs">
             <button className={`tab-btn ${activeTab === 'citoyens' ? 'active' : ''}`} onClick={() => setActiveTab('citoyens')}>Citoyens</button>
-            <button className={`tab-btn ${activeTab === 'secretaires' ? 'active' : ''}`} onClick={() => setActiveTab('secretaires')}>Secrétaires</button>
+            <button className={`tab-btn ${activeTab === 'responsableMunicipalites' ? 'active' : ''}`} onClick={() => setActiveTab('responsableMunicipalites')}>Responsables Municipaux</button>
             <button className={`tab-btn ${activeTab === 'agents' ? 'active' : ''}`} onClick={() => setActiveTab('agents')}>Agents</button>
             <button className={`tab-btn ${activeTab === 'chefsInfo' ? 'active' : ''}`} onClick={() => setActiveTab('chefsInfo')}>Chefs Informatique</button>
             <button className={`tab-btn ${activeTab === 'chefGeneral' ? 'active' : ''}`} onClick={() => setActiveTab('chefGeneral')}>Chef Général</button>
@@ -322,14 +426,14 @@
             />
           )}
 
-          {activeTab === 'secretaires' && (
+          {activeTab === 'responsableMunicipalites' && (
             <ListSection
-              title="Secrétaires"
-              items={data.secretaires}
-              roleKey="secretaires"
-              onAdd={() => openCreate('secretaires')}
-              onEdit={(item) => openEdit('secretaires', item)}
-              onDelete={(item) => handleDelete('secretaires', item)}
+              title="Responsables Municipaux"
+              items={data.responsableMunicipalites}
+              roleKey="responsableMunicipalites"
+              onAdd={() => openCreate('responsableMunicipalites')}
+              onEdit={(item) => openEdit('responsableMunicipalites', item)}
+              onDelete={(item) => handleDelete('responsableMunicipalites', item)}
             />
           )}
 

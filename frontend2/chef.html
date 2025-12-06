@@ -81,40 +81,30 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script type="text/babel">
-    const { useMemo, useState } = React;
+    const { useMemo, useState, useEffect } = React;
 
-    const AGENTS = [
-      { cin: '55556666', nom: 'Agent Alpha', service: 'Voirie', dispo: true },
-      { cin: '77778888', nom: 'Agent Beta', service: 'Éclairage', dispo: true },
-      { cin: '12121212', nom: 'Agent Delta', service: 'Propreté', dispo: true },
-      { cin: '34343434', nom: 'Agent Epsilon', service: 'Signalisation', dispo: false },
-      { cin: '99990000', nom: 'Agent Gamma', service: 'Propreté', dispo: false }
-    ];
+    function getApiBase() {
+        const host = window.location.hostname;
+        const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0';
+        if (isLocal) {
+            return 'http://localhost:8080';
+        }
+        const proto = window.location.protocol === 'https:' ? 'https' : 'http';
+        return `${proto}://${host.replace('-8000', '-8080')}`;
+    }
 
-    const INTERVENTIONS = [
-      { id: 901, type: 'Urgent', localisation: 'Rue du Lac', etat: 65, urgence: 4, agent: '55556666' },
-      { id: 902, type: 'Préventif', localisation: 'Avenue Carthage', etat: 100, urgence: 2, agent: '77778888' },
-      { id: 903, type: 'Signalisation', localisation: 'Bd de l\'Indépendance', etat: 20, urgence: 5, agent: '34343434' }
-    ];
-
-    const RAPPORTS = [
-      { id: 301, interventionRef: 902, cinAgent: '77778888', duree: '3h', description: 'Remplacement éclairage', cout: 450 },
-      { id: 302, interventionRef: 901, cinAgent: '55556666', duree: '1h30', description: 'Dégagement voirie', cout: 180 }
-    ];
-
-    const EQUIPEMENTS = [
-      { id: 1, nom: 'Camion benne', disponible: true },
-      { id: 2, nom: 'Pelleteuse', disponible: true },
-      { id: 3, nom: 'Equipe voirie', disponible: false },
-      { id: 4, nom: 'Kit éclairage', disponible: true },
-      { id: 5, nom: 'Balai', disponible: true }
-    ];
-
-    const CITIZENS = [
-      { cin: '12345678', email: 'ahmed@example.com', nom: 'Ahmed', prenom: 'Ben Ali', adresse: 'Rue de Tunis', rue: 'Centre-ville' },
-      { cin: '98765432', email: 'nour.citizen@example.com', nom: 'Nour', prenom: 'Saadi', adresse: 'Rue Ibn Khaldoun', rue: 'El Menzah' },
-      { cin: '11223344', email: 'asma@example.com', nom: 'Asma', prenom: 'Gharbi', adresse: 'Avenue Bourguiba', rue: 'Carthage' }
-    ];
+    function parseJwt(token) {
+        try {
+          const base64Url = token.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+              return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+          }).join(''));
+          return JSON.parse(jsonPayload);
+        } catch (e) {
+          return null;
+        }
+    }
 
     function Progress({ value }) {
       const pct = Math.min(100, Math.max(0, value));
@@ -132,19 +122,70 @@
     }
 
     function App() {
-      const [selectedIntervention, setSelectedIntervention] = useState(INTERVENTIONS[0] || null);
-      const [selectedRapport, setSelectedRapport] = useState(RAPPORTS[0] || null);
+      const [token, setToken] = useState(sessionStorage.getItem('municipaliteToken') || localStorage.getItem('municipaliteToken') || '');
       const [activeSection, setActiveSection] = useState('interventions');
+      
+      const [agents, setAgents] = useState([]);
+      const [interventions, setInterventions] = useState([]);
+      const [rapports, setRapports] = useState([]);
+      const [equipements, setEquipements] = useState([]);
+      const [citoyens, setCitoyens] = useState([]);
+
+      const [selectedIntervention, setSelectedIntervention] = useState(null);
+      const [selectedRapport, setSelectedRapport] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState('');
+
+      const API = getApiBase();
+
+      useEffect(() => {
+        if (!token) {
+          window.location.href = 'login.html';
+          return;
+        }
+        const decoded = parseJwt(token);
+        if (!decoded || decoded.role !== 'chef') {
+             // Optional: redirect if not chef, but for now just load data
+        }
+        loadAllData();
+      }, [token]);
+
+      async function loadAllData() {
+          setLoading(true);
+          try {
+              const headers = { 'Authorization': `Bearer ${token}` };
+              
+              const [resAgents, resInterv, resRapports, resEquip, resCitoyens] = await Promise.all([
+                  fetch(`${API}/agents`, { headers }),
+                  fetch(`${API}/interventions`, { headers }),
+                  fetch(`${API}/rapports`, { headers }),
+                  fetch(`${API}/equipements`, { headers }),
+                  fetch(`${API}/citoyens`, { headers })
+              ]);
+
+              if (resAgents.ok) setAgents(await resAgents.json());
+              if (resInterv.ok) setInterventions(await resInterv.json());
+              if (resRapports.ok) setRapports(await resRapports.json());
+              if (resEquip.ok) setEquipements(await resEquip.json());
+              if (resCitoyens.ok) setCitoyens(await resCitoyens.json());
+
+          } catch (e) {
+              console.error(e);
+              setError("Erreur lors du chargement des données.");
+          } finally {
+              setLoading(false);
+          }
+      }
 
       const kpis = useMemo(() => {
-        const totalInterv = INTERVENTIONS.length;
-        const done = INTERVENTIONS.filter(i => i.etat >= 100).length;
-        const enCours = INTERVENTIONS.filter(i => i.etat > 0 && i.etat < 100).length;
-        const nonDemarre = INTERVENTIONS.filter(i => i.etat === 0).length;
-        const dispoAgents = AGENTS.filter(a => a.dispo).length;
-        const urgenceMoy = INTERVENTIONS.length ? (INTERVENTIONS.reduce((s, i) => s + i.urgence, 0) / INTERVENTIONS.length).toFixed(1) : '0';
-        const equipDispo = EQUIPEMENTS.filter(e => e.disponible).length;
-        const coutTotal = RAPPORTS.reduce((s, r) => s + r.cout, 0);
+        const totalInterv = interventions.length;
+        const done = interventions.filter(i => i.etat >= 100).length;
+        const enCours = interventions.filter(i => i.etat > 0 && i.etat < 100).length;
+        const nonDemarre = interventions.filter(i => i.etat === 0).length;
+        const dispoAgents = agents.filter(a => a.disponibilite).length;
+        const urgenceMoy = interventions.length ? (interventions.reduce((s, i) => s + i.urgence, 0) / interventions.length).toFixed(1) : '0';
+        const equipDispo = equipements.filter(e => e.disponible).length;
+        const coutTotal = rapports.reduce((s, r) => s + r.cout, 0);
         return {
           totalInterv,
           done,
@@ -155,7 +196,7 @@
           equipDispo,
           coutTotal
         };
-      }, []);
+      }, [interventions, agents, equipements, rapports]);
 
       return (
         <div>
@@ -163,6 +204,9 @@
             <div className="brand"><span className="brand-dot"></span> Espace Chef Général</div>
             <div style={{ color: 'var(--muted)', fontSize: 13 }}>Vue globale: agents · interventions · rapports · équipements</div>
           </header>
+
+          {error && <div style={{color: 'var(--danger)', marginBottom: 10}}>{error}</div>}
+          {loading && <div style={{color: 'var(--accent)', marginBottom: 10}}>Chargement des données...</div>}
 
           <div className="kpi-grid">
             <div className="kpi-card">
@@ -184,14 +228,14 @@
               <div className="kpi-label">Agents disponibles</div>
               <div className="row-between">
                 <div className="kpi-value">{kpis.dispoAgents}</div>
-                <div className="badge badge-ok">Sur {AGENTS.length}</div>
+                <div className="badge badge-ok">Sur {agents.length}</div>
               </div>
             </div>
             <div className="kpi-card">
               <div className="kpi-label">Équipements libres</div>
               <div className="row-between">
                 <div className="kpi-value">{kpis.equipDispo}</div>
-                <div className="badge badge-ok">Total {EQUIPEMENTS.length}</div>
+                <div className="badge badge-ok">Total {equipements.length}</div>
               </div>
             </div>
             <div className="kpi-card">
@@ -211,9 +255,9 @@
           </div>
         {activeSection === 'citoyens' && (
             <div className="panel">
-              <div className="panel-header"><span>Citoyens</span><span>{CITIZENS.length} inscrits</span></div>
+              <div className="panel-header"><span>Citoyens</span><span>{citoyens.length} inscrits</span></div>
               <div className="list">
-                {CITIZENS.map((citizen) => (
+                {citoyens.map((citizen) => (
                   <div key={citizen.cin} className="card-item" style={{ gridTemplateColumns: '1fr auto' }}>
                     <div>
                       <div className="title">{citizen.nom} {citizen.prenom}</div>
@@ -224,16 +268,16 @@
                     <span className="badge badge-ok">Citoyen</span>
                   </div>
                 ))}
-                {CITIZENS.length === 0 && <div className="empty">Aucun citoyen enregistré.</div>}
+                {citoyens.length === 0 && <div className="empty">Aucun citoyen enregistré.</div>}
               </div>
             </div>
           )}
 
           {activeSection === 'interventions' && (
             <div className="panel">
-              <div className="panel-header"><span>Interventions</span><span>{INTERVENTIONS.length} suivies</span></div>
+              <div className="panel-header"><span>Interventions</span><span>{interventions.length} suivies</span></div>
               <div className="list">
-                {INTERVENTIONS.map((i) => (
+                {interventions.map((i) => (
                   <div
                     key={i.id}
                     className="card-item"
@@ -242,7 +286,7 @@
                   >
                     <div>
                       <div className="title">#{i.id} · {i.type}</div>
-                      <div className="meta">{i.localisation} · Agent {i.agent}</div>
+                      <div className="meta">{i.localisation} · Agent {i.cinAgent}</div>
                       <Progress value={i.etat} />
                     </div>
                     <div style={{ display: 'grid', gap: 6, justifyItems: 'end' }}>
@@ -251,7 +295,7 @@
                     </div>
                   </div>
                 ))}
-                {INTERVENTIONS.length === 0 && <div className="empty">Aucune intervention.</div>}
+                {interventions.length === 0 && <div className="empty">Aucune intervention.</div>}
               </div>
 
               <div className="panel" style={{ marginTop: 12 }}>
@@ -261,7 +305,7 @@
                     <div className="card-item" style={{ gridTemplateColumns: '1fr' }}>
                       <div className="title">{selectedIntervention.type}</div>
                       <div className="meta">Localisation: {selectedIntervention.localisation}</div>
-                      <div className="meta">Agent affecté: {selectedIntervention.agent}</div>
+                      <div className="meta">Agent affecté: {selectedIntervention.cinAgent}</div>
                       <div className="meta">Urgence: {selectedIntervention.urgence}/5</div>
                       <div className="meta">Avancement:</div>
                       <Progress value={selectedIntervention.etat} />
@@ -277,16 +321,16 @@
 
           {activeSection === 'agents' && (
             <div className="panel">
-              <div className="panel-header"><span>Agents</span><span>{AGENTS.length} au total</span></div>
+              <div className="panel-header"><span>Agents</span><span>{agents.length} au total</span></div>
               <div className="list">
-                {AGENTS.map((a) => (
+                {agents.map((a) => (
                   <div key={a.cin} className="card-item">
                     <div>
-                      <div className="title">{a.nom}</div>
+                      <div className="title">{a.nom} {a.prenom}</div>
                       <div className="meta">CIN {a.cin} · {a.service}</div>
                     </div>
-                    <span className={`badge ${a.dispo ? 'badge-ok' : 'badge-danger'}`}>
-                      {a.dispo ? 'Disponible' : 'Occupé'}
+                    <span className={`badge ${a.disponibilite ? 'badge-ok' : 'badge-danger'}`}>
+                      {a.disponibilite ? 'Disponible' : 'Occupé'}
                     </span>
                   </div>
                 ))}
@@ -296,37 +340,41 @@
 
           {activeSection === 'rapports' && (
             <div className="panel">
-              <div className="panel-header"><span>Rapports</span><span>{RAPPORTS.length} reçus</span></div>
+              <div className="panel-header"><span>Rapports</span><span>{rapports.length} reçus</span></div>
               <div className="list">
-                {RAPPORTS.map((r) => (
+                {rapports.map((r, idx) => (
                   <div
-                    key={r.id}
+                    key={idx}
                     className="card-item"
                     onClick={() => setSelectedRapport(r)}
-                    style={{ cursor: 'pointer', borderColor: selectedRapport?.id === r.id ? 'var(--accent)' : undefined }}
+                    style={{ cursor: 'pointer', borderColor: selectedRapport === r ? 'var(--accent)' : undefined }}
                   >
                     <div>
-                      <div className="title">Rapport #{r.id}</div>
-                      <div className="meta">Intervention #{r.interventionRef} · Agent {r.cinAgent}</div>
-                      <div className="meta">Durée {r.duree} · Coût {r.cout} dt</div>
+                      <div className="title">Rapport Intervention #{r.interventionRef}</div>
+                      <div className="meta">Agent {r.cinAgent}</div>
+                      <div className="meta">Durée {r.duree} jours · Coût {r.cout} dt</div>
                       <div className="meta">{r.description}</div>
                     </div>
                   </div>
                 ))}
-                {RAPPORTS.length === 0 && <div className="empty">Aucun rapport.</div>}
+                {rapports.length === 0 && <div className="empty">Aucun rapport.</div>}
               </div>
 
               <div className="panel" style={{ marginTop: 12 }}>
-                <div className="panel-header"><span>Détail rapport</span><span>{selectedRapport ? `#${selectedRapport.id}` : ''}</span></div>
+                <div className="panel-header"><span>Détail rapport</span><span>{selectedRapport ? `Intervention #${selectedRapport.interventionRef}` : ''}</span></div>
                 {selectedRapport ? (
                   <div className="list">
                     <div className="card-item" style={{ gridTemplateColumns: '1fr' }}>
-                      <div className="title">Rapport #{selectedRapport.id}</div>
-                      <div className="meta">Intervention: #{selectedRapport.interventionRef}</div>
+                      <div className="title">Rapport Intervention #{selectedRapport.interventionRef}</div>
                       <div className="meta">Agent: {selectedRapport.cinAgent}</div>
-                      <div className="meta">Durée: {selectedRapport.duree}</div>
+                      <div className="meta">Durée: {selectedRapport.duree} jours</div>
                       <div className="meta">Coût: {selectedRapport.cout} dt</div>
                       <div className="meta">Description: {selectedRapport.description}</div>
+                      {selectedRapport.image && selectedRapport.image.length > 0 && (
+                          <div style={{marginTop: 10}}>
+                              <img src={`data:image/jpeg;base64,${selectedRapport.image}`} style={{maxWidth: '100%', borderRadius: 8}} />
+                          </div>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -338,9 +386,9 @@
 
           {activeSection === 'equipements' && (
             <div className="panel">
-              <div className="panel-header"><span>Équipements</span><span>{EQUIPEMENTS.length} items</span></div>
+              <div className="panel-header"><span>Équipements</span><span>{equipements.length} items</span></div>
               <div className="list">
-                {EQUIPEMENTS.map((e) => (
+                {equipements.map((e) => (
                   <div key={e.id} className="card-item">
                     <div>
                       <div className="title">{e.nom}</div>
@@ -351,7 +399,7 @@
                     </span>
                   </div>
                 ))}
-                {EQUIPEMENTS.length === 0 && <div className="empty">Aucun équipement.</div>}
+                {equipements.length === 0 && <div className="empty">Aucun équipement.</div>}
               </div>
             </div>
           )}
