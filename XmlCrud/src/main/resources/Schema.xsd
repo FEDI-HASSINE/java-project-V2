@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!-- Types simples -->
+  <xs:simpleType name="EmailType">
+      <xs:restriction base="xs:string">
+          <xs:pattern value="[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"/>
+      </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="CINType">
+      <xs:restriction base="xs:string">
+          <xs:pattern value="[0-9]{8}"/>
+      </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="EtatInterventionType">
+      <xs:restriction base="xs:integer">
+          <xs:minInclusive value="0"/>
+          <xs:maxInclusive value="100"/>
+      </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Type de compte de base -->
+  <xs:complexType name="AccountType">
+      <xs:sequence>
+          <xs:element name="CIN" type="CINType"/>
+          <xs:element name="email" type="EmailType"/>
+          <xs:element name="password" type="xs:string"/>
+          <xs:element name="nom" type="xs:string"/>
+          <xs:element name="prenom" type="xs:string"/>
+          <xs:element name="role" type="xs:string"/>
+      </xs:sequence>
+  </xs:complexType>
+
+  <!-- Types spécifiques -->
+  <xs:complexType name="CitoyenType">
+      <xs:complexContent>
+          <xs:extension base="AccountType">
+              <xs:sequence>
+                  <xs:element name="Adresse" type="xs:string"/>
+                  <xs:element name="Rue" type="xs:string"/>
+              </xs:sequence>
+          </xs:extension>
+      </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="AgentType">
+      <xs:complexContent>
+          <xs:extension base="AccountType">
+              <xs:sequence> 
+                  <xs:element name="Disponibilite" type="xs:boolean"/>
+                  <xs:element name="service" type="xs:string"/>
+              </xs:sequence>
+          </xs:extension>
+      </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="SecretaireType">
+      <xs:complexContent>
+          <xs:extension base="AccountType"/>
+      </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ChefGeneraleType">
+      <xs:complexContent>
+          <xs:extension base="AccountType"/>
+      </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ChefInformatiqueType">
+      <xs:complexContent>
+          <xs:extension base="AccountType"/>
+      </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="DemandeType">
+      <xs:sequence>
+          <xs:element name="identifiant" type="xs:integer"/>
+          <xs:element name="citoyenRef" type="CINType"/> 
+          <xs:element name="DateDeSoumission" type="xs:date"/>
+          <xs:element name="image" type="xs:base64Binary"/>
+          <xs:element name="localisation" type="xs:string"/>
+      </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="NotificationType">
+      <xs:sequence>
+          <xs:element name="idN" type="xs:integer"/>
+          <xs:element name="citoyenRef" type="CINType"/> 
+          <xs:element name="contenue" type="xs:string"/>
+      </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="RapportDeTravailleType">
+      <xs:sequence>
+          <xs:element name="CINAgent" type="CINType"/>
+          <xs:element name="cout" type="xs:integer"/>
+          <xs:element name="Duree" type="xs:integer"/>
+          <xs:element name="description" type="xs:string"/>
+          <xs:element name="image" type="xs:base64Binary"/>
+          <xs:element name="InterventionRef" type="xs:integer"/>
+      </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="InterventionType">
+      <xs:sequence>
+          <xs:element name="id" type="xs:integer"/>
+          <xs:element name="budget" type="xs:integer"/>
+          <xs:element name="dateDebut" type="xs:date"/>
+          <xs:element name="type" type="xs:string"/>
+          <xs:element name="urgence" type="xs:integer"/>
+          <xs:element name="etat" type="EtatInterventionType" default="0"/>
+          <xs:element name="localisation" type="xs:string"/>
+          <xs:element name="image" type="xs:base64Binary"/>
+          <xs:element name="CINAgent" type="CINType"/>
+          <xs:element name="CINSecretaire" type="CINType"/>
+      </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="EquipementType">
+      <xs:sequence>
+          <xs:element name="id" type="xs:integer"/>
+          <xs:element name="nom" type="xs:string"/>
+          <xs:element name="disponible" type="xs:boolean"/>
+      </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="EquipementInterventionType">
+      <xs:sequence>
+          <xs:element name="equipementRef" type="xs:integer"/>
+          <xs:element name="interventionRef" type="xs:integer"/>
+      </xs:sequence>
+  </xs:complexType>
+
+  <!-- Element racine -->
+  <xs:element name="Municipalite">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element name="Citoyens">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Citoyen" type="CitoyenType" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Agents">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Agent" type="AgentType" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Secretaires">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Secretaire" type="SecretaireType" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="ChefsGeneraux">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="ChefGenerale" type="ChefGeneraleType" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="ChefsInformatiques">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="ChefInformatique" type="ChefInformatiqueType" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Demandes">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Demande" type="DemandeType" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Notifications">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Notification" type="NotificationType" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Interventions">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Intervention" type="InterventionType" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="RapportsDeTravaille">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="RapportDeTravaille" type="RapportDeTravailleType" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            
+            <xs:element name="Equipements">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Equipement" type="EquipementType" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="EquipementInterventions">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="EquipementIntervention" type="EquipementInterventionType" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Clés primaires -->
+    <xs:key name="citoyenKey">
+        <xs:selector xpath="Citoyens/Citoyen"/>
+        <xs:field xpath="CIN"/>
+    </xs:key>
+
+    <xs:key name="AgentKey">
+        <xs:selector xpath="Agents/Agent"/>
+        <xs:field xpath="CIN"/>
+    </xs:key>
+
+    <xs:key name="SecretaireKey">
+        <xs:selector xpath="Secretaires/Secretaire"/>
+        <xs:field xpath="CIN"/>
+    </xs:key>
+
+    <xs:key name="demandeKey">
+        <xs:selector xpath="Demandes/Demande"/>
+        <xs:field xpath="identifiant"/>
+    </xs:key>
+
+    <xs:key name="NotificationKey">
+        <xs:selector xpath="Notifications/Notification"/>
+        <xs:field xpath="idN"/>
+    </xs:key>
+
+    <xs:key name="interventionKey">
+        <xs:selector xpath="Interventions/Intervention"/>
+        <xs:field xpath="id"/>
+    </xs:key>
+
+    <xs:key name="equipementKey">
+        <xs:selector xpath="Equipements/Equipement"/>
+        <xs:field xpath="id"/>
+    </xs:key>
+
+    <xs:key name="equipementInterventionKey">
+        <xs:selector xpath="EquipementInterventions/EquipementIntervention"/>
+        <xs:field xpath="equipementRef"/>
+        <xs:field xpath="interventionRef"/>
+    </xs:key>  
+
+    <!-- Clés étrangères -->
+    <xs:keyref name="rapportTointervention" refer="interventionKey">
+        <xs:selector xpath="RapportsDeTravaille/RapportDeTravaille"/>
+        <xs:field xpath="InterventionRef"/>
+    </xs:keyref>
+
+    <xs:keyref name="equipementForeignKey" refer="equipementKey">
+        <xs:selector xpath="EquipementInterventions/EquipementIntervention"/>
+        <xs:field xpath="equipementRef"/>
+    </xs:keyref>
+
+    <xs:keyref name="interventionForeignKey" refer="interventionKey">
+        <xs:selector xpath="EquipementInterventions/EquipementIntervention"/>
+        <xs:field xpath="interventionRef"/>
+    </xs:keyref>
+
+    <xs:keyref name="demandeToCitoyen" refer="citoyenKey">
+        <xs:selector xpath="Demandes/Demande"/>
+        <xs:field xpath="citoyenRef"/>
+    </xs:keyref>
+
+    <xs:keyref name="notificationToCitoyen" refer="citoyenKey">
+        <xs:selector xpath="Notifications/Notification"/>
+        <xs:field xpath="citoyenRef"/>
+    </xs:keyref>
+
+    <xs:keyref name="rapportDeTravailleToAgent" refer="AgentKey">
+        <xs:selector xpath="RapportsDeTravaille/RapportDeTravaille"/>
+        <xs:field xpath="CINAgent"/>
+    </xs:keyref>
+
+    <xs:keyref name="InterventionToAgent" refer="AgentKey">
+        <xs:selector xpath="Interventions/Intervention"/>
+        <xs:field xpath="CINAgent"/>
+    </xs:keyref>
+
+    <xs:keyref name="InterventionToSecretaire" refer="SecretaireKey">
+        <xs:selector xpath="Interventions/Intervention"/>
+        <xs:field xpath="CINSecretaire"/>
+    </xs:keyref>
+
+</xs:element>
+</xs:schema>

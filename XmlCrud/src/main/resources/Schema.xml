@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Municipalite>
+    <Citoyens>
+        <Citoyen>
+            <CIN>12345678</CIN>
+            <email>ahmed@example.com</email>
+            <password>pass123</password>
+            <nom>Ahmed</nom>
+            <prenom>Ben Ali</prenom>
+            <role>citoyen</role>
+            <Adresse>Rue de Tunis</Adresse>
+            <Rue>Centre-ville</Rue>
+        </Citoyen>
+        <Citoyen>
+            <CIN>98765432</CIN>
+            <email>nour.citizen@example.com</email>
+            <password>nourpass</password>
+            <nom>Nour</nom>
+            <prenom>Saadi</prenom>
+            <role>citoyen</role>
+            <Adresse>Rue Ibn Khaldoun</Adresse>
+            <Rue>El Menzah</Rue>
+        </Citoyen>
+        <Citoyen>
+            <CIN>14657678</CIN>
+            <email>AAAAAAAAAA@gmail.com</email>
+            <password>azertyui</password>
+            <nom>chakib</nom>
+            <prenom>chakib2</prenom>
+            <role>citoyen</role>
+            <Adresse>mahdia</Adresse>
+            <Rue>bourguiba</Rue>
+        </Citoyen>
+        <Citoyen>
+            <CIN>14626009</CIN>
+            <email>Test@gmail.com</email>
+            <password>azertyuio</password>
+            <nom>sofienne</nom>
+            <prenom>sofienne</prenom>
+            <role>citoyen</role>
+            <Adresse>mounastir</Adresse>
+            <Rue>rue chakir</Rue>
+        </Citoyen>
+    </Citoyens>
+    <Agents>
+        <Agent>
+            <CIN>11112222</CIN>
+            <email>agent1.maj@example.com</email>
+            <password>agentpass</password>
+            <nom>Ali</nom>
+            <prenom>Hajri</prenom>
+            <role>agent</role>
+            <Disponibilite>false</Disponibilite>
+            <service>Propreté</service>
+        </Agent>
+    </Agents>
+    <Secretaires>
+        <Secretaire>
+            <CIN>22223333</CIN>
+            <email>secretaire.updated@example.com</email>
+            <password>secret456</password>
+            <nom>Leila</nom>
+            <prenom>Ghribi</prenom>
+            <role>secretaire</role>
+        </Secretaire>
+    </Secretaires>
+    <ChefsGeneraux>
+        <ChefGenerale>
+            <CIN>55556666</CIN>
+            <email>chefgen@example.com</email>
+            <password>chefpass</password>
+            <nom>Mohamed</nom>
+            <prenom>Karoui</prenom>
+            <role>chef</role>
+        </ChefGenerale>
+    </ChefsGeneraux>
+    <ChefsInformatiques>
+        <ChefInformatique>
+            <CIN>66667777</CIN>
+            <email>chefinf@example.com</email>
+            <password>infopass</password>
+            <nom>Foued</nom>
+            <prenom>Maalej</prenom>
+            <role>chefinfo</role>
+        </ChefInformatique>
+    </ChefsInformatiques>
+    <Demandes>
+        <Demande>
+            <identifiant>1</identifiant>
+            <citoyenRef>12345678</citoyenRef>
+            <DateDeSoumission>2025-11-26</DateDeSoumission>
+            <image>iVBORw0KGgoAAAANSUhEUgAAAAUA</image>
+            <localisation>Tunis</localisation>
+        </Demande>
+        <Demande>
+            <identifiant>2</identifiant>
+            <citoyenRef>12345678</citoyenRef>
+            <DateDeSoumission>2025-11-30</DateDeSoumission>
+            <image>iVBORw0KGgoAAAANSUhEUgAA</image>
+            <localisation>Rue ABC, Ville XYZ</localisation>
+        </Demande>
+        <Demande>
+            <identifiant>3</identifiant>
+            <citoyenRef>12345678</citoyenRef>
+            <DateDeSoumission>2025-12-01</DateDeSoumission>
+            <image>AA==</image>
+            <localisation>Rue Habib</localisation>
+        </Demande>
+        <Demande>
+            <identifiant>4</identifiant>
+            <citoyenRef>12345678</citoyenRef>
+            <DateDeSoumission>2025-12-01</DateDeSoumission>
+            <image>AA==</image>
+            <localisation>Rue 456</localisation>
+        </Demande>
+        <Demande>
+            <identifiant>5</identifiant>
+            <citoyenRef>12345678</citoyenRef>
+            <DateDeSoumission>2025-12-01</DateDeSoumission>
+            <image>AA==</image>
+            <localisation>Rue Habib</localisation>
+        </Demande>
+        <Demande>
+            <identifiant>6</identifiant>
+            <citoyenRef>12345678</citoyenRef>
+            <DateDeSoumission>2025-12-02</DateDeSoumission>
+            <image>iVBORw0KGgoAAAANSUhEUgAAAAoAAAAK</image>
+            <localisation>Avenue des Tests</localisation>
+        </Demande>
+        <Demande>
+            <identifiant>7</identifiant>
+            <citoyenRef>98765432</citoyenRef>
+            <DateDeSoumission>2025-12-03</DateDeSoumission>
+            <image>iVBORw0KGgoAAAANSUhEUgAAAA8AAAAP</image>
+            <localisation>Rue Ibn Khaldoun</localisation>
+        </Demande>
+        <Demande>
+            <identifiant>8</identifiant>
+            <citoyenRef>98765432</citoyenRef>
+            <DateDeSoumission>2025-12-04</DateDeSoumission>
+            <image>iVBORw0KGgoAAAANSUhEUgAAAA0AAAAN</image>
+            <localisation>Avenue du Lac</localisation>
+        </Demande>
+    </Demandes>
+    <Notifications>
+        <Notification>
+            <idN>1</idN>
+            <citoyenRef>12345678</citoyenRef>
+            <contenue>Votre demande est acceptée</contenue>
+        </Notification>
+    </Notifications>
+    <Interventions>
+        <Intervention>
+            <id>1</id>
+            <budget>500</budget>
+            <dateDebut>2025-10-01</dateDebut>
+            <type>Urgent</type>
+            <urgence>3</urgence>
+            <etat>0</etat>
+            <localisation>Rue centrale</localisation>
+            <image>iVBORw0KGgoAAAANSUhEUgAAAAUA</image>
+            <CINAgent>11112222</CINAgent>
+            <CINSecretaire>22223333</CINSecretaire>
+        </Intervention>
+        <Intervention>
+            <id>2</id>
+            <budget>800</budget>
+            <dateDebut>2025-11-01</dateDebut>
+            <type>Maintenance</type>
+            <urgence>4</urgence>
+            <etat>100</etat>
+            <localisation>Avenue du Lac</localisation>
+            <image>AA==</image>
+            <CINAgent>11112222</CINAgent>
+            <CINSecretaire>22223333</CINSecretaire>
+        </Intervention>
+    </Interventions>
+    <RapportsDeTravaille>
+        <RapportDeTravaille>
+            <CINAgent>11112222</CINAgent>
+            <cout>150</cout>
+            <Duree>4</Duree>
+            <description>Nettoyage du parc</description>
+            <image>iVBORw0KGgoAAAANSUhEUgAAAAUA</image>
+            <InterventionRef>1</InterventionRef>
+        </RapportDeTravaille>
+        <RapportDeTravaille>
+            <CINAgent>11112222</CINAgent>
+            <cout>120</cout>
+            <Duree>4</Duree>
+            <description>Remise en etat du feu tricolore, pieces changees</description>
+            <image></image>
+            <InterventionRef>2</InterventionRef>
+        </RapportDeTravaille>
+    </RapportsDeTravaille>
+    <Equipements>
+        <Equipement>
+            <id>1</id>
+            <nom>Balai</nom>
+            <disponible>true</disponible>
+        </Equipement>
+        <Equipement>
+            <id>2</id>
+            <nom>Caméra thermique</nom>
+            <disponible>true</disponible>
+        </Equipement>
+    </Equipements>
+    <EquipementInterventions>
+        <EquipementIntervention>
+            <equipementRef>1</equipementRef>
+            <interventionRef>1</interventionRef>
+        </EquipementIntervention>
+    </EquipementInterventions>
+</Municipalite>

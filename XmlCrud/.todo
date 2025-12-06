@@ -1,0 +1,3 @@
+- [ ] Inspect JwtFilter execution path and confirm Authorization header handling
+- [ ] Adjust security configuration / filter to load authentication from JWT correctly
+- [ ] Rebuild & run tests (manual curl) to verify /demandes/create succeeds

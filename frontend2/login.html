@@ -255,11 +255,19 @@
         if (hostWithoutPort) {
           candidates.add(`${protocol}//${hostWithoutPort}:8080`);
         }
-        candidates.add(`${protocol}//localhost:8080`);
-        candidates.add(`${protocol}//127.0.0.1:8080`);
+        
+        // Force HTTP for localhost to handle file:// protocol or mixed content where allowed
+        candidates.add('http://localhost:8080');
+        candidates.add('http://127.0.0.1:8080');
+
+        // Also try current protocol if it's not file:
+        if (protocol !== 'file:') {
+            candidates.add(`${protocol}//localhost:8080`);
+            candidates.add(`${protocol}//127.0.0.1:8080`);
+        }
 
         if (hostWithoutPort === '0.0.0.0') {
-          candidates.add(`${protocol}//127.0.0.1:8080`);
+          candidates.add('http://127.0.0.1:8080');
         }
 
         const codespaceMatch = hostname.match(/^(?<name>.+?)-(?<port>\d+)\.(?<domain>(?:app|preview)\.github\.dev)$/);
@@ -408,7 +416,7 @@
         }
       };
 
-      const onSignupSubmit = (e) => {
+      const onSignupSubmit = async (e) => {
         e.preventDefault();
         setSignupTouched({
           cin: true,
@@ -435,8 +443,93 @@
           return;
         }
 
-        console.log('Création de compte simulée', citizenData);
-        alert('Création de compte simulée (maquette)');
+        setLoading(true);
+        setErrorMessage('');
+
+        try {
+          const payloadBody = JSON.stringify({
+            cin: citizenData.cin.trim(),
+            email: citizenData.email.trim(),
+            password: citizenData.password,
+            nom: citizenData.nom.trim(),
+            prenom: citizenData.prenom.trim(),
+            adresse: citizenData.adresse.trim(),
+            rue: citizenData.rue.trim()
+          });
+
+          let lastError = null;
+          let lastResponseBody = '';
+          let token = null;
+          let resolvedBase = null;
+
+          for (const base of candidateApiBases) {
+            const endpoint = `${base}/auth/signup`;
+            console.debug('Tentative d\'inscription via', endpoint);
+            try {
+              const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: payloadBody,
+                mode: 'cors',
+                credentials: 'include'
+              });
+
+              if (!response.ok) {
+                lastResponseBody = await response.text().catch(() => '');
+                lastError = new Error(`HTTP_${response.status}`);
+                lastError.details = lastResponseBody;
+                continue;
+              }
+
+              const payload = await response.json();
+              token = payload?.token;
+              resolvedBase = base;
+              break;
+            } catch (error) {
+              lastError = error;
+              lastResponseBody = String(error.message || '');
+            }
+          }
+
+          if (!token) {
+            const failure = new Error('SIGNUP_FAILED');
+            failure.cause = lastError;
+            failure.details = lastResponseBody;
+            throw failure;
+          }
+
+          console.debug('Inscription réussie via', resolvedBase);
+
+          // Stocker le token et rediriger
+          sessionStorage.setItem('municipaliteToken', token);
+          localStorage.removeItem('municipaliteToken'); // Par défaut session pour signup
+
+          window.location.href = 'citoyen.html';
+
+        } catch (error) {
+          console.error('Échec de l\'inscription', error);
+          if (error.message === 'SIGNUP_FAILED') {
+             // Essayer d'extraire un message d'erreur plus précis du backend si possible
+             // Souvent le backend renvoie un JSON ou du texte avec l'erreur
+             let msg = "Inscription impossible.";
+             if (error.details) {
+                 try {
+                     const jsonErr = JSON.parse(error.details);
+                     if (jsonErr.message) msg = jsonErr.message;
+                 } catch(e) {
+                     // Si ce n'est pas du JSON, on regarde si c'est un message court
+                     if (error.details.length < 100) msg = error.details;
+                 }
+             }
+             setErrorMessage(msg);
+          } else {
+            setErrorMessage("Impossible de contacter le serveur d'inscription");
+          }
+        } finally {
+          setLoading(false);
+        }
       };
 
       const renderLogin = () => (
@@ -638,9 +731,12 @@
                 <div className="helper">{helpers.rue}</div>
               </div>
 
-              <button className="button" type="submit">
-                Valider la demande
+              <button className="button" type="submit" disabled={loading}>
+                {loading ? 'Traitement...' : 'Valider la demande'}
               </button>
+              <div className="helper" style={{ textAlign: 'center', color: 'var(--danger)', marginTop: '10px' }}>
+                {errorMessage}
+              </div>
             </form>
 
             <div className="note">
