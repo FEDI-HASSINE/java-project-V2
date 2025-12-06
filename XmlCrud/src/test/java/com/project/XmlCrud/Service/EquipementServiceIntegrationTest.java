@@ -23,7 +23,7 @@ class EquipementServiceIntegrationTest {
     private EquipementService equipementService;
 
     @Test
-    void secretaireAjouteEtAssigneEquipements() throws Exception {
+    void responsableMunicipaliteAjouteEtAssigneEquipements() throws Exception {
         Path xmlPath = Paths.get(System.getProperty("user.dir"), "src/main/resources/Schema.xml")
                 .toAbsolutePath()
                 .normalize();
@@ -33,14 +33,14 @@ class EquipementServiceIntegrationTest {
         request.setNom("Camion citerne");
 
         try {
-            Equipement created = equipementService.addEquipement(request, "secretaire.updated@example.com");
+            Equipement created = equipementService.addEquipement(request, "leila.updated@example.com");
             assertEquals("Camion citerne", created.getNom());
             assertTrue(created.isDisponible());
 
             List<Equipement> assigned = equipementService.assignEquipementsToIntervention(
                     1,
                     List.of(created.getId()),
-                    "secretaire.updated@example.com"
+                    "leila.updated@example.com"
             );
 
             assertEquals(1, assigned.size());

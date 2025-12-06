@@ -15,7 +15,7 @@ import java.util.List;
 @XmlType(propOrder = {
         "citoyens",
         "agents",
-        "secretaires",
+        "responsableMunicipalites",
         "chefsGeneraux",
         "chefsInformatiques",
         "demandes",
@@ -35,9 +35,9 @@ public class Municipalite {
     @XmlElement(name = "Agent", required = true)
     private List<Agent> agents = new ArrayList<>();
 
-    @XmlElementWrapper(name = "Secretaires", required = true)
-    @XmlElement(name = "Secretaire", required = true)
-    private List<Secretaire> secretaires = new ArrayList<>();
+    @XmlElementWrapper(name = "ResponsablesMunicipalites", required = true)
+    @XmlElement(name = "ResponsableMunicipalite", required = true)
+    private List<ResponsableMunicipalite> responsableMunicipalites = new ArrayList<>();
 
     @XmlElementWrapper(name = "ChefsGeneraux", required = true)
     @XmlElement(name = "ChefGenerale", required = true)
@@ -93,12 +93,12 @@ public class Municipalite {
         this.agents = ensureList(agents);
     }
 
-    public List<Secretaire> getSecretaires() {
-        return ensureList(secretaires);
+    public List<ResponsableMunicipalite> getResponsableMunicipalites() {
+        return ensureList(responsableMunicipalites);
     }
 
-    public void setSecretaires(List<Secretaire> secretaires) {
-        this.secretaires = ensureList(secretaires);
+    public void setResponsableMunicipalites(List<ResponsableMunicipalite> responsableMunicipalites) {
+        this.responsableMunicipalites = ensureList(responsableMunicipalites);
     }
 
     public List<ChefGenerale> getChefsGeneraux() {
@@ -185,12 +185,12 @@ public class Municipalite {
         return getAgents().removeIf(a -> cin.equals(a.getCin()));
     }
 
-    public void addSecretaire(Secretaire secretaire) {
-        getSecretaires().add(secretaire);
+    public void addResponsableMunicipalite(ResponsableMunicipalite responsableMunicipalite) {
+        getResponsableMunicipalites().add(responsableMunicipalite);
     }
 
-    public boolean removeSecretaireByCin(String cin) {
-        return getSecretaires().removeIf(s -> cin.equals(s.getCin()));
+    public boolean removeResponsableMunicipaliteByCin(String cin) {
+        return getResponsableMunicipalites().removeIf(s -> cin.equals(s.getCin()));
     }
 
     public void addChefGenerale(ChefGenerale chefGenerale) {

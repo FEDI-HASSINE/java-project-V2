@@ -11,7 +11,7 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlSeeAlso({
         Citoyen.class,
         Agent.class,
-        Secretaire.class,
+        ResponsableMunicipalite.class,
         ChefGenerale.class,
         ChefInformatique.class
 })

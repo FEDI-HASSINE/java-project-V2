@@ -15,8 +15,7 @@ public class ChefInformatiqueRequest {
     @Email
     private String email;
 
-    @NotBlank
-    @Size(min = 6, message = "Le mot de passe doit contenir au moins 6 caractères")
+    // Password validation is handled manually in the controller to allow optional updates
     private String password;
 
     @NotBlank

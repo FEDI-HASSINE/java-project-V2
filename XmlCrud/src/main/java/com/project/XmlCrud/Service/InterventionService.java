@@ -9,7 +9,7 @@ import com.project.XmlCrud.Model.Municipalite;
 import com.project.XmlCrud.Model.Equipement;
 import com.project.XmlCrud.Model.EquipementIntervention;
 import com.project.XmlCrud.Model.Notification;
-import com.project.XmlCrud.Model.Secretaire;
+import com.project.XmlCrud.Model.ResponsableMunicipalite;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -23,11 +23,11 @@ import java.util.NoSuchElementException;
 @Service
 public class InterventionService {
 
-    private final SecretaireService secretaireService;
+    private final ResponsableMunicipaliteService responsableMunicipaliteService;
     private final AgentService agentService;
 
-    public InterventionService(SecretaireService secretaireService, AgentService agentService) {
-        this.secretaireService = secretaireService;
+    public InterventionService(ResponsableMunicipaliteService responsableMunicipaliteService, AgentService agentService) {
+        this.responsableMunicipaliteService = responsableMunicipaliteService;
         this.agentService = agentService;
     }
 
@@ -37,11 +37,11 @@ public class InterventionService {
         XmlUtil.saveMunicipalite(municipalite);
     }
 
-    public Intervention createInterventionFromDemande(Integer demandeId, InterventionFromDemandeRequest request, String secretaireEmail) {
+    public Intervention createInterventionFromDemande(Integer demandeId, InterventionFromDemandeRequest request, String responsableMunicipaliteEmail) {
         Municipalite municipalite = XmlUtil.loadMunicipalite();
 
-        Secretaire secretaire = secretaireService.getSecretaireByEmail(normalizeEmail(secretaireEmail))
-                .orElseThrow(() -> new IllegalArgumentException("Secretaire introuvable pour l'utilisateur connecté"));
+        ResponsableMunicipalite responsableMunicipalite = responsableMunicipaliteService.getResponsableMunicipaliteByEmail(normalizeEmail(responsableMunicipaliteEmail))
+                .orElseThrow(() -> new IllegalArgumentException("ResponsableMunicipalite introuvable pour l'utilisateur connecté"));
 
         Demande demande = municipalite.getDemandes().stream()
                 .filter(d -> demandeId.equals(d.getIdentifiant()))
@@ -74,7 +74,7 @@ public class InterventionService {
 
         intervention.setImage(resolveImageBytes(request.getImageBase64(), demande.getImage()));
         intervention.setCinAgent(agent.getCin());
-        intervention.setCinSecretaire(secretaire.getCin());
+        intervention.setCinResponsableMunicipalite(responsableMunicipalite.getCin());
 
         // 1. Add Intervention
         municipalite.addIntervention(intervention);
@@ -107,6 +107,13 @@ public class InterventionService {
 
         XmlUtil.saveMunicipalite(municipalite);
         return intervention;
+    }
+
+    public List<Intervention> getInterventionsByAgent(String cin) {
+        return XmlUtil.loadMunicipalite().getInterventions()
+                .stream()
+                .filter(i -> cin.equals(i.getCinAgent()))
+                .toList();
     }
 
     public List<Intervention> getAllInterventions() {
@@ -164,12 +171,12 @@ public class InterventionService {
         return intervention;
     }
 
-    public Intervention updateInterventionBySecretaire(Integer interventionId, UpdateInterventionRequest request, String secretaireEmail) {
+    public Intervention updateInterventionByResponsableMunicipalite(Integer interventionId, UpdateInterventionRequest request, String responsableMunicipaliteEmail) {
         Municipalite municipalite = XmlUtil.loadMunicipalite();
 
-        // Vérifier secretaire
-        secretaireService.getSecretaireByEmail(normalizeEmail(secretaireEmail))
-                .orElseThrow(() -> new IllegalArgumentException("Secretaire introuvable pour l'utilisateur connecté"));
+        // Vérifier responsableMunicipalite
+        responsableMunicipaliteService.getResponsableMunicipaliteByEmail(normalizeEmail(responsableMunicipaliteEmail))
+                .orElseThrow(() -> new IllegalArgumentException("ResponsableMunicipalite introuvable pour l'utilisateur connecté"));
 
         // Intervention existante
         Intervention intervention = municipalite.getInterventions().stream()
@@ -182,7 +189,7 @@ public class InterventionService {
         intervention.setDateDebut(request.getDateDebut());
         intervention.setType(request.getType().trim());
         intervention.setUrgence(request.getUrgence());
-        // La secretaire ne peut pas modifier l'état; on conserve la valeur existante
+        // La responsableMunicipalite ne peut pas modifier l'état; on conserve la valeur existante
         // intervention.setEtat(...) volontairement ignoré pour ce rôle
         if (request.getLocalisation() != null) {
             intervention.setLocalisation(request.getLocalisation().trim());

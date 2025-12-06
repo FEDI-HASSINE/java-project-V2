@@ -23,7 +23,7 @@ import java.util.List;
 @RestController
 public class InterventionController {
 
-    private static final String ROLE_SECRETAIRE = "secretaire";
+    private static final String ROLE_RESPONSABLE_MUNICIPALITE = "responsableMunicipalite";
     private static final String ROLE_AGENT = "agent";
 
     private final InterventionService interventionService;
@@ -32,10 +32,18 @@ public class InterventionController {
         this.interventionService = interventionService;
     }
 
+    @GetMapping("/interventions/agent/{cin}")
+    public List<Intervention> getInterventionsByAgent(@PathVariable String cin, Authentication authentication) {
+        if (!hasAuthority(authentication, ROLE_AGENT)) {
+             throw new AccessDeniedException("Seul un agent peut voir ses interventions");
+        }
+        return interventionService.getInterventionsByAgent(cin);
+    }
+
     @GetMapping("/interventions")
     public List<Intervention> getAllInterventions(Authentication authentication) {
-        if (!hasAuthority(authentication, ROLE_SECRETAIRE)) {
-            throw new AccessDeniedException("Seule une secretaire peut voir toutes les interventions");
+        if (!hasAuthority(authentication, ROLE_RESPONSABLE_MUNICIPALITE) && !hasAuthority(authentication, "chef")) {
+            throw new AccessDeniedException("Accès refusé");
         }
         return interventionService.getAllInterventions();
     }
@@ -44,8 +52,8 @@ public class InterventionController {
     public ResponseEntity<Intervention> createFromDemande(@PathVariable Integer demandeId,
                                                           @Valid @RequestBody InterventionFromDemandeRequest request,
                                                           Authentication authentication) {
-        if (!hasAuthority(authentication, ROLE_SECRETAIRE)) {
-            throw new AccessDeniedException("Seule une secretaire peut créer une intervention à partir d'une demande");
+        if (!hasAuthority(authentication, ROLE_RESPONSABLE_MUNICIPALITE)) {
+            throw new AccessDeniedException("Seule une responsableMunicipalite peut créer une intervention à partir d'une demande");
         }
 
         Intervention intervention = interventionService.createInterventionFromDemande(
@@ -79,11 +87,11 @@ public class InterventionController {
             @PathVariable Integer interventionId,
             @Valid @RequestBody UpdateInterventionRequest request,
             Authentication authentication) {
-        if (!hasAuthority(authentication, ROLE_SECRETAIRE)) {
-            throw new AccessDeniedException("Seule une secretaire peut modifier une intervention");
+        if (!hasAuthority(authentication, ROLE_RESPONSABLE_MUNICIPALITE)) {
+            throw new AccessDeniedException("Seule une responsableMunicipalite peut modifier une intervention");
         }
 
-        Intervention updated = interventionService.updateInterventionBySecretaire(
+        Intervention updated = interventionService.updateInterventionByResponsableMunicipalite(
                 interventionId,
                 request,
                 authentication.getName()

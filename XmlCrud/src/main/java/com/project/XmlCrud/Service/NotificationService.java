@@ -4,7 +4,7 @@ import com.project.XmlCrud.Model.Citoyen;
 import com.project.XmlCrud.Model.Demande;
 import com.project.XmlCrud.Model.Municipalite;
 import com.project.XmlCrud.Model.Notification;
-import com.project.XmlCrud.Model.Secretaire;
+import com.project.XmlCrud.Model.ResponsableMunicipalite;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -14,11 +14,11 @@ import java.util.NoSuchElementException;
 @Service
 public class NotificationService {
 
-    private final SecretaireService secretaireService;
+    private final ResponsableMunicipaliteService responsableMunicipaliteService;
     private final CitoyenService citoyenService;
 
-    public NotificationService(SecretaireService secretaireService, CitoyenService citoyenService) {
-        this.secretaireService = secretaireService;
+    public NotificationService(ResponsableMunicipaliteService responsableMunicipaliteService, CitoyenService citoyenService) {
+        this.responsableMunicipaliteService = responsableMunicipaliteService;
         this.citoyenService = citoyenService;
     }
 
@@ -28,11 +28,11 @@ public class NotificationService {
         XmlUtil.saveMunicipalite(municipalite);
     }
 
-    public Notification createNotificationForDemande(Integer demandeId, String contenue, String secretaireEmail) {
+    public Notification createNotificationForDemande(Integer demandeId, String contenue, String responsableMunicipaliteEmail) {
         Municipalite municipalite = XmlUtil.loadMunicipalite();
 
-        Secretaire secretaire = secretaireService.getSecretaireByEmail(normalizeEmail(secretaireEmail))
-                .orElseThrow(() -> new IllegalArgumentException("Secretaire introuvable pour l'utilisateur connecté"));
+        ResponsableMunicipalite responsableMunicipalite = responsableMunicipaliteService.getResponsableMunicipaliteByEmail(normalizeEmail(responsableMunicipaliteEmail))
+                .orElseThrow(() -> new IllegalArgumentException("ResponsableMunicipalite introuvable pour l'utilisateur connecté"));
 
         Demande demande = municipalite.getDemandes().stream()
                 .filter(d -> demandeId.equals(d.getIdentifiant()))

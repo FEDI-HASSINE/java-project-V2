@@ -22,6 +22,7 @@ public class InterventionFromDemandeRequest {
 
     @NotNull
     @Min(0)
+    @jakarta.validation.constraints.Max(5)
     private Integer urgence;
 
     @Min(0)

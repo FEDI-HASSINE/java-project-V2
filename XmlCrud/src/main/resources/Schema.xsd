@@ -21,6 +21,13 @@
       </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="UrgenceType">
+      <xs:restriction base="xs:integer">
+          <xs:minInclusive value="0"/>
+          <xs:maxInclusive value="5"/>
+      </xs:restriction>
+  </xs:simpleType>
+
   <!-- Type de compte de base -->
   <xs:complexType name="AccountType">
       <xs:sequence>
@@ -56,7 +63,7 @@
       </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="SecretaireType">
+  <xs:complexType name="ResponsableMunicipaliteType">
       <xs:complexContent>
           <xs:extension base="AccountType"/>
       </xs:complexContent>
@@ -109,12 +116,12 @@
           <xs:element name="budget" type="xs:integer"/>
           <xs:element name="dateDebut" type="xs:date"/>
           <xs:element name="type" type="xs:string"/>
-          <xs:element name="urgence" type="xs:integer"/>
+          <xs:element name="urgence" type="UrgenceType"/>
           <xs:element name="etat" type="EtatInterventionType" default="0"/>
           <xs:element name="localisation" type="xs:string"/>
           <xs:element name="image" type="xs:base64Binary"/>
           <xs:element name="CINAgent" type="CINType"/>
-          <xs:element name="CINSecretaire" type="CINType"/>
+          <xs:element name="CINResponsableMunicipalite" type="CINType"/>
       </xs:sequence>
   </xs:complexType>
 
@@ -151,10 +158,10 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="Secretaires">
+            <xs:element name="ResponsablesMunicipalites">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="Secretaire" type="SecretaireType" maxOccurs="unbounded"/>
+                        <xs:element name="ResponsableMunicipalite" type="ResponsableMunicipaliteType" maxOccurs="unbounded"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -229,8 +236,8 @@
         <xs:field xpath="CIN"/>
     </xs:key>
 
-    <xs:key name="SecretaireKey">
-        <xs:selector xpath="Secretaires/Secretaire"/>
+    <xs:key name="ResponsableMunicipaliteKey">
+        <xs:selector xpath="ResponsablesMunicipalites/ResponsableMunicipalite"/>
         <xs:field xpath="CIN"/>
     </xs:key>
 
@@ -296,9 +303,9 @@
         <xs:field xpath="CINAgent"/>
     </xs:keyref>
 
-    <xs:keyref name="InterventionToSecretaire" refer="SecretaireKey">
+    <xs:keyref name="InterventionToResponsableMunicipalite" refer="ResponsableMunicipaliteKey">
         <xs:selector xpath="Interventions/Intervention"/>
-        <xs:field xpath="CINSecretaire"/>
+        <xs:field xpath="CINResponsableMunicipalite"/>
     </xs:keyref>
 
 </xs:element>

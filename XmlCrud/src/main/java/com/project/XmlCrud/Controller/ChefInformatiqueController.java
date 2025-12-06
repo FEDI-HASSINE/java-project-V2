@@ -32,7 +32,10 @@ public class ChefInformatiqueController {
     }
 
     @PostMapping
-    public ResponseEntity<ChefInformatiqueResponse> createChefInformatique(@Valid @RequestBody ChefInformatiqueRequest request) {
+    public ResponseEntity<?> createChefInformatique(@Valid @RequestBody ChefInformatiqueRequest request) {
+        if (request.getPassword() == null || request.getPassword().length() < 6) {
+            return ResponseEntity.badRequest().body("Le mot de passe doit contenir au moins 6 caractères");
+        }
         ChefInformatique chef = buildChef(request);
         chefInformatiqueService.addChefInformatique(chef);
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(chef));
@@ -58,13 +61,30 @@ public class ChefInformatiqueController {
     @PutMapping("/{cin}")
     public ChefInformatiqueResponse updateChefInformatique(@PathVariable String cin,
                                                             @Valid @RequestBody ChefInformatiqueRequest request) {
-        ChefInformatique chef = buildChef(request);
-        chef.setCin(cin);
-
-        boolean updated = chefInformatiqueService.updateChef(chef);
-        if (!updated) {
+        ChefInformatique existing = chefInformatiqueService.getChefByCIN(cin);
+        if (existing == null) {
             throw new NoSuchElementException("Chef informatique introuvable");
         }
+
+        String passwordToUse = request.getPassword();
+        if (passwordToUse == null || passwordToUse.isEmpty()) {
+            passwordToUse = existing.getPassword();
+        } else {
+            if (passwordToUse.length() < 6) {
+                throw new IllegalArgumentException("Le mot de passe doit contenir au moins 6 caractères");
+            }
+        }
+
+        ChefInformatique chef = new ChefInformatique(
+                cin,
+                request.getEmail().trim().toLowerCase(),
+                passwordToUse,
+                request.getNom().trim(),
+                request.getPrenom().trim(),
+                ROLE_CHEF_INFO
+        );
+
+        chefInformatiqueService.updateChef(chef);
         return toResponse(chef);
     }
 

@@ -37,7 +37,7 @@ public final class XmlUtil {
             // Touch getters to ensure non-null lists
             municipalite.getCitoyens();
             municipalite.getAgents();
-            municipalite.getSecretaires();
+            municipalite.getResponsableMunicipalites();
             municipalite.getChefsGeneraux();
             municipalite.getChefsInformatiques();
             municipalite.getDemandes();

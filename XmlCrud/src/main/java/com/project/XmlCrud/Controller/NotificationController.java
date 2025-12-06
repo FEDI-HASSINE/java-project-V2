@@ -21,7 +21,7 @@ import java.util.List;
 @RestController
 public class NotificationController {
 
-    private static final String ROLE_SECRETAIRE = "secretaire";
+    private static final String ROLE_RESPONSABLE_MUNICIPALITE = "responsableMunicipalite";
     private static final String ROLE_CITOYEN = "citoyen";
 
     private final NotificationService notificationService;
@@ -34,8 +34,8 @@ public class NotificationController {
     public ResponseEntity<Notification> createNotification(@PathVariable Integer demandeId,
                                                            @Valid @RequestBody NotificationRequest request,
                                                            Authentication authentication) {
-        if (!hasAuthority(authentication, ROLE_SECRETAIRE)) {
-            throw new AccessDeniedException("Seule une secretaire peut créer une notification pour une demande");
+        if (!hasAuthority(authentication, ROLE_RESPONSABLE_MUNICIPALITE)) {
+            throw new AccessDeniedException("Seule une responsableMunicipalite peut créer une notification pour une demande");
         }
 
         Notification created = notificationService.createNotificationForDemande(
@@ -52,10 +52,10 @@ public class NotificationController {
         if (hasAuthority(authentication, ROLE_CITOYEN)) {
             return notificationService.getNotificationsForCitizen(authentication.getName());
         }
-        if (hasAuthority(authentication, ROLE_SECRETAIRE)) {
+        if (hasAuthority(authentication, ROLE_RESPONSABLE_MUNICIPALITE)) {
             return notificationService.getAllNotifications();
         }
-        throw new AccessDeniedException("Accès limité aux citoyens et aux secretaires");
+        throw new AccessDeniedException("Accès limité aux citoyens et aux responsableMunicipalites");
     }
 
     @GetMapping("/notifications/{id}")
@@ -63,8 +63,8 @@ public class NotificationController {
         if (hasAuthority(authentication, ROLE_CITOYEN)) {
             return notificationService.getNotificationForCitizen(id, authentication.getName());
         }
-        if (!hasAuthority(authentication, ROLE_SECRETAIRE)) {
-            throw new AccessDeniedException("Accès limité aux citoyens et aux secretaires");
+        if (!hasAuthority(authentication, ROLE_RESPONSABLE_MUNICIPALITE)) {
+            throw new AccessDeniedException("Accès limité aux citoyens et aux responsableMunicipalites");
         }
 
         Notification notification = notificationService.getNotificationById(id);

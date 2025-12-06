@@ -79,6 +79,12 @@ public class RapportDeTravailleController {
         );
 
         rapportService.addRapport(rapport);
+
+        // Supprimer l'intervention et rendre l'agent disponible
+        interventionService.deleteIntervention(interventionId);
+        agent.setDisponibilite(true);
+        agentService.updateAgent(agent);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(rapport);
     }
 
@@ -88,6 +94,17 @@ public class RapportDeTravailleController {
             throw new AccessDeniedException("Seul le chef général peut consulter les rapports");
         }
         return rapportService.getAllRapports();
+    }
+
+    @GetMapping("/rapports/me")
+    public List<RapportDeTravaille> getMyRapports(Authentication authentication) {
+        if (!hasAuthority(authentication, ROLE_AGENT)) {
+            throw new AccessDeniedException("Seul un agent peut consulter ses rapports");
+        }
+        Agent agent = agentService.getAgentByEmail(authentication.getName())
+                .orElseThrow(() -> new AccessDeniedException("Agent introuvable"));
+        
+        return rapportService.getRapportsByAgent(agent.getCin());
     }
 
     private static boolean hasAuthority(Authentication authentication, String authority) {

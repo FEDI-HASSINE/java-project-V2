@@ -21,7 +21,7 @@ import java.util.List;
 @RestController
 public class EquipementController {
 
-    private static final String ROLE_SECRETAIRE = "secretaire";
+    private static final String ROLE_RESPONSABLE_MUNICIPALITE = "responsableMunicipalite";
 
     private final EquipementService equipementService;
 
@@ -32,8 +32,8 @@ public class EquipementController {
     @PostMapping("/equipements")
     public ResponseEntity<Equipement> addEquipement(@Valid @RequestBody EquipementRequest request,
                                                     Authentication authentication) {
-        if (!hasAuthority(authentication, ROLE_SECRETAIRE)) {
-            throw new AccessDeniedException("Seule une secretaire peut ajouter un equipement");
+        if (!hasAuthority(authentication, ROLE_RESPONSABLE_MUNICIPALITE)) {
+            throw new AccessDeniedException("Seule une responsableMunicipalite peut ajouter un equipement");
         }
 
         Equipement created = equipementService.addEquipement(request, authentication.getName());
@@ -42,8 +42,8 @@ public class EquipementController {
 
     @GetMapping("/equipements")
     public List<Equipement> getEquipements(Authentication authentication) {
-        if (!hasAuthority(authentication, ROLE_SECRETAIRE)) {
-            throw new AccessDeniedException("Seule une secretaire peut consulter les equipements");
+        if (!hasAuthority(authentication, ROLE_RESPONSABLE_MUNICIPALITE) && !hasAuthority(authentication, "chef")) {
+            throw new AccessDeniedException("Accès refusé");
         }
         return equipementService.getAllEquipements();
     }
@@ -51,8 +51,8 @@ public class EquipementController {
     @GetMapping("/interventions/{interventionId}/equipements")
     public List<Equipement> getEquipementsForIntervention(@PathVariable Integer interventionId,
                                                            Authentication authentication) {
-        if (!hasAuthority(authentication, ROLE_SECRETAIRE)) {
-            throw new AccessDeniedException("Seule une secretaire peut consulter les equipements d'une intervention");
+        if (!hasAuthority(authentication, ROLE_RESPONSABLE_MUNICIPALITE)) {
+            throw new AccessDeniedException("Seule une responsableMunicipalite peut consulter les equipements d'une intervention");
         }
         return equipementService.getEquipementsForIntervention(interventionId);
     }
@@ -61,8 +61,8 @@ public class EquipementController {
     public List<Equipement> assignEquipements(@PathVariable Integer interventionId,
                                                @Valid @RequestBody EquipementAssignmentRequest request,
                                                Authentication authentication) {
-        if (!hasAuthority(authentication, ROLE_SECRETAIRE)) {
-            throw new AccessDeniedException("Seule une secretaire peut affecter des equipements");
+        if (!hasAuthority(authentication, ROLE_RESPONSABLE_MUNICIPALITE)) {
+            throw new AccessDeniedException("Seule une responsableMunicipalite peut affecter des equipements");
         }
         return equipementService.assignEquipementsToIntervention(
                 interventionId,

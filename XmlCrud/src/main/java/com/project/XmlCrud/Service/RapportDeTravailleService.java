@@ -19,6 +19,13 @@ public class RapportDeTravailleService {
         return XmlUtil.loadMunicipalite().getRapportsDeTravaille();
     }
 
+    public List<RapportDeTravaille> getRapportsByAgent(String cin) {
+        return XmlUtil.loadMunicipalite().getRapportsDeTravaille()
+                .stream()
+                .filter(r -> r.getCinAgent().equals(cin))
+                .toList();
+    }
+
     public RapportDeTravaille getRapportByInterventionRef(Integer ref) {
         return XmlUtil.loadMunicipalite().getRapportsDeTravaille()
                 .stream()

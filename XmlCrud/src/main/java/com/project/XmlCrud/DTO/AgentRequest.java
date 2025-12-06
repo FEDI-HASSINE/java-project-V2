@@ -16,8 +16,7 @@ public class AgentRequest {
     @Email
     private String email;
 
-    @NotBlank
-    @Size(min = 6, message = "Le mot de passe doit contenir au moins 6 caractères")
+    // Password validation is handled manually in the controller
     private String password;
 
     @NotBlank
@@ -26,7 +25,7 @@ public class AgentRequest {
     @NotBlank
     private String prenom;
 
-    @NotNull
+    // Disponibilite is optional for updates (handled in controller)
     private Boolean disponibilite;
 
     @NotBlank

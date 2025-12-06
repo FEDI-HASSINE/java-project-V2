@@ -43,7 +43,7 @@ class XmlCrudApplicationTests {
 	}
 
 	@Test
-	void secretaireCreatesInterventionFromDemande() throws Exception {
+	void responsableMunicipaliteCreatesInterventionFromDemande() throws Exception {
 		Path xmlPath = Paths.get(System.getProperty("user.dir"), "src/main/resources/Schema.xml").toAbsolutePath().normalize();
 		byte[] snapshot = Files.readAllBytes(xmlPath);
 		int baseCount = XmlUtil.loadMunicipalite().getInterventions().size();
@@ -62,10 +62,10 @@ class XmlCrudApplicationTests {
 			Intervention created = interventionService.createInterventionFromDemande(
 					1,
 					request,
-					"secretaire.updated@example.com"
+					"leila.updated@example.com"
 			);
 			assertEquals("11112222", created.getCinAgent(), "L'intervention doit être assignée à l'agent fourni");
-			assertEquals("22223333", created.getCinSecretaire(), "L'intervention doit référencer la secretaire connectée");
+			assertEquals("22223333", created.getCinResponsableMunicipalite(), "L'intervention doit référencer la responsableMunicipalite connectée");
 			int updatedCount = XmlUtil.loadMunicipalite().getInterventions().size();
 			assertEquals(baseCount + 1, updatedCount, "Une intervention doit être ajoutée");
 		} finally {

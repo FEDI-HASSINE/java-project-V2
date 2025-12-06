@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public class SecretaireRequest {
+public class ResponsableMunicipaliteRequest {
 
     @NotBlank
     @Pattern(regexp = "\\d{8}", message = "Le CIN doit contenir 8 chiffres")
@@ -15,8 +15,7 @@ public class SecretaireRequest {
     @Email
     private String email;
 
-    @NotBlank
-    @Size(min = 6, message = "Le mot de passe doit contenir au moins 6 caractères")
+    // Password validation is handled manually in the controller
     private String password;
 
     @NotBlank

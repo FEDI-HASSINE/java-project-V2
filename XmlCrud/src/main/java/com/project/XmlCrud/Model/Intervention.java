@@ -21,7 +21,7 @@ import java.time.LocalDate;
     "localisation",
     "image",
     "cinAgent",
-    "cinSecretaire"
+    "cinResponsableMunicipalite"
 })
 public class Intervention {
 
@@ -54,8 +54,8 @@ public class Intervention {
     @XmlElement(name = "CINAgent", required = true)
     private String cinAgent;
 
-    @XmlElement(name = "CINSecretaire", required = true)
-    private String cinSecretaire;
+    @XmlElement(name = "CINResponsableMunicipalite", required = true)
+    private String cinResponsableMunicipalite;
 
     public Intervention() {
         // JAXB requirement
@@ -63,7 +63,7 @@ public class Intervention {
 
     public Intervention(Integer id, Integer budget, LocalDate dateDebut, String type,
                         Integer urgence, Integer etat, String localisation, byte[] image,
-                        String cinAgent, String cinSecretaire) {
+                        String cinAgent, String cinResponsableMunicipalite) {
         this.id = id;
         this.budget = budget;
         this.dateDebut = dateDebut;
@@ -73,7 +73,7 @@ public class Intervention {
         this.localisation = localisation == null ? "" : localisation;
         this.image = image == null ? new byte[0] : image;
         this.cinAgent = cinAgent;
-        this.cinSecretaire = cinSecretaire;
+        this.cinResponsableMunicipalite = cinResponsableMunicipalite;
     }
 
     public Integer getId() {
@@ -148,11 +148,11 @@ public class Intervention {
         this.cinAgent = cinAgent;
     }
 
-    public String getCinSecretaire() {
-        return cinSecretaire;
+    public String getCinResponsableMunicipalite() {
+        return cinResponsableMunicipalite;
     }
 
-    public void setCinSecretaire(String cinSecretaire) {
-        this.cinSecretaire = cinSecretaire;
+    public void setCinResponsableMunicipalite(String cinResponsableMunicipalite) {
+        this.cinResponsableMunicipalite = cinResponsableMunicipalite;
     }
 }

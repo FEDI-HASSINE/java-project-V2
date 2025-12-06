@@ -1,6 +1,6 @@
 package com.project.XmlCrud.DTO;
 
-public class SecretaireResponse {
+public class ChefGeneraleResponse {
 
     private String cin;
     private String email;
@@ -8,11 +8,10 @@ public class SecretaireResponse {
     private String prenom;
     private String role;
 
-    public SecretaireResponse() {
-        // Default constructor for serialization frameworks
+    public ChefGeneraleResponse() {
     }
 
-    public SecretaireResponse(String cin, String email, String nom, String prenom, String role) {
+    public ChefGeneraleResponse(String cin, String email, String nom, String prenom, String role) {
         this.cin = cin;
         this.email = email;
         this.nom = nom;

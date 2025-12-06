@@ -13,20 +13,20 @@ public class AuthService {
     private final CitoyenService citoyenService;
     private final AgentService agentService;
     private final ChefGeneraleService chefGeneraleService;
-    private final SecretaireService secretaireService;
+    private final ResponsableMunicipaliteService responsableMunicipaliteService;
     private final ChefInformatiqueService chefInfoService;
 
     public AuthService(JwtUtil jwtUtil,
                        CitoyenService citoyenService,
                        AgentService agentService,
                        ChefGeneraleService chefGeneraleService,
-                       SecretaireService secretaireService,
+                       ResponsableMunicipaliteService responsableMunicipaliteService,
                        ChefInformatiqueService chefInfoService) {
         this.jwtUtil = jwtUtil;
         this.citoyenService = citoyenService;
         this.agentService = agentService;
         this.chefGeneraleService = chefGeneraleService;
-        this.secretaireService = secretaireService;
+        this.responsableMunicipaliteService = responsableMunicipaliteService;
         this.chefInfoService = chefInfoService;
     }
 
@@ -75,7 +75,7 @@ public class AuthService {
             return user;
         }
 
-        user = secretaireService.getAllSecretaires().stream()
+        user = responsableMunicipaliteService.getAllResponsableMunicipalites().stream()
                 .filter(s -> s.getEmail().equalsIgnoreCase(email))
                 .findFirst();
         if (user.isPresent()) {

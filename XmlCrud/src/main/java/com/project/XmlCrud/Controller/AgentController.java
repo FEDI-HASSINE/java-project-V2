@@ -32,7 +32,13 @@ public class AgentController {
     }
 
     @PostMapping
-    public ResponseEntity<AgentResponse> createAgent(@Valid @RequestBody AgentRequest request) {
+    public ResponseEntity<?> createAgent(@Valid @RequestBody AgentRequest request) {
+        if (request.getPassword() == null || request.getPassword().length() < 6) {
+            return ResponseEntity.badRequest().body("Le mot de passe doit contenir au moins 6 caractères");
+        }
+        if (request.getDisponibilite() == null) {
+             return ResponseEntity.badRequest().body("La disponibilité est requise pour la création");
+        }
         Agent agent = buildAgent(request);
         Agent created = agentService.addAgent(agent);
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(created));
@@ -55,8 +61,33 @@ public class AgentController {
 
     @PutMapping("/{cin}")
     public AgentResponse updateAgent(@PathVariable String cin, @Valid @RequestBody AgentRequest request) {
-        Agent agent = buildAgent(request);
-        agent.setCin(cin);
+        Agent existing = agentService.getAgentByCIN(cin)
+                .orElseThrow(() -> new NoSuchElementException("Agent introuvable"));
+
+        String passwordToUse = request.getPassword();
+        if (passwordToUse == null || passwordToUse.isEmpty()) {
+            passwordToUse = existing.getPassword();
+        } else {
+            if (passwordToUse.length() < 6) {
+                throw new IllegalArgumentException("Le mot de passe doit contenir au moins 6 caractères");
+            }
+        }
+
+        Boolean dispoToUse = request.getDisponibilite();
+        if (dispoToUse == null) {
+            dispoToUse = existing.isDisponibilite();
+        }
+
+        Agent agent = new Agent(
+                cin,
+                request.getEmail().trim().toLowerCase(),
+                passwordToUse,
+                request.getNom().trim(),
+                request.getPrenom().trim(),
+                ROLE_AGENT,
+                dispoToUse,
+                request.getService().trim()
+        );
 
         boolean updated = agentService.updateAgent(agent);
         if (!updated) {
@@ -66,7 +97,14 @@ public class AgentController {
     }
 
     @DeleteMapping("/{cin}")
-    public ResponseEntity<Void> deleteAgent(@PathVariable String cin) {
+    public ResponseEntity<?> deleteAgent(@PathVariable String cin) {
+        Agent existing = agentService.getAgentByCIN(cin)
+                .orElseThrow(() -> new NoSuchElementException("Agent introuvable"));
+        
+        if (!existing.isDisponibilite()) {
+            return ResponseEntity.badRequest().body("Impossible de supprimer un agent non disponible");
+        }
+
         boolean removed = agentService.deleteAgent(cin);
         if (!removed) {
             throw new NoSuchElementException("Agent introuvable");

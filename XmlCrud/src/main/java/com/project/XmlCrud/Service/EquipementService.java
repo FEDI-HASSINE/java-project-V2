@@ -19,15 +19,15 @@ import java.util.stream.Collectors;
 @Service
 public class EquipementService {
 
-    private final SecretaireService secretaireService;
+    private final ResponsableMunicipaliteService responsableMunicipaliteService;
 
-    public EquipementService(SecretaireService secretaireService) {
-        this.secretaireService = secretaireService;
+    public EquipementService(ResponsableMunicipaliteService responsableMunicipaliteService) {
+        this.responsableMunicipaliteService = responsableMunicipaliteService;
     }
 
-    public Equipement addEquipement(EquipementRequest request, String secretaireEmail) {
-        secretaireService.getSecretaireByEmail(normalizeEmail(secretaireEmail))
-            .orElseThrow(() -> new IllegalArgumentException("Secretaire introuvable pour l'utilisateur connecté"));
+    public Equipement addEquipement(EquipementRequest request, String responsableMunicipaliteEmail) {
+        responsableMunicipaliteService.getResponsableMunicipaliteByEmail(normalizeEmail(responsableMunicipaliteEmail))
+            .orElseThrow(() -> new IllegalArgumentException("ResponsableMunicipalite introuvable pour l'utilisateur connecté"));
 
         Municipalite municipalite = XmlUtil.loadMunicipalite();
 
@@ -67,13 +67,13 @@ public class EquipementService {
 
     public List<Equipement> assignEquipementsToIntervention(Integer interventionId,
                                                             List<Integer> equipementIds,
-                                                            String secretaireEmail) {
+                                                            String responsableMunicipaliteEmail) {
         if (equipementIds == null || equipementIds.isEmpty()) {
             throw new IllegalArgumentException("Liste d'equipements obligatoire");
         }
 
-        secretaireService.getSecretaireByEmail(normalizeEmail(secretaireEmail))
-            .orElseThrow(() -> new IllegalArgumentException("Secretaire introuvable pour l'utilisateur connecté"));
+        responsableMunicipaliteService.getResponsableMunicipaliteByEmail(normalizeEmail(responsableMunicipaliteEmail))
+            .orElseThrow(() -> new IllegalArgumentException("ResponsableMunicipalite introuvable pour l'utilisateur connecté"));
 
         Municipalite municipalite = XmlUtil.loadMunicipalite();
 
