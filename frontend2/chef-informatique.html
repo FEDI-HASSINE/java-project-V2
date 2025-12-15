@@ -151,11 +151,7 @@
           { key: 'password', label: 'Mot de passe', required: true, minLength: 6 },
           { key: 'nom', label: 'Nom', required: true },
           { key: 'prenom', label: 'Prénom', required: true },
-          { key: 'service', label: 'Service', required: true },
-          { key: 'dispo', label: 'Disponible', type: 'select', options: [
-            { value: true, label: 'Oui' },
-            { value: false, label: 'Non' }
-          ] }
+          { key: 'service', label: 'Service', required: true }
         ],
         chefsInfo: [
           { key: 'cin', label: 'CIN', required: true, pattern: "\\d{8}", title: "8 chiffres" },
@@ -176,14 +172,14 @@
 
       let fields = fieldsByRole[role] || [];
       
-      // Filter out 'dispo' for agents in edit mode
-      if (role === 'agents' && initial) {
-        fields = fields.filter(f => f.key !== 'dispo');
-      }
-
       const submit = (e) => {
         e.preventDefault();
-        onSubmit(form);
+        const dataToSubmit = { ...form };
+        // Set default availability for new agents
+        if (role === 'agents' && !initial) {
+            dataToSubmit.disponibilite = true;
+        }
+        onSubmit(dataToSubmit);
       };
 
       return (
@@ -243,7 +239,7 @@
                   {item.service && <div className="meta">Service: {item.service}</div>}
                   {item.adresse && <div className="meta">Adresse: {item.adresse}</div>}
                   {item.rue && <div className="meta">Rue: {item.rue}</div>}
-                  {item.dispo !== undefined && <div className="meta">Disponible: {item.dispo ? 'Oui' : 'Non'}</div>}
+                  {item.disponibilite !== undefined && <div className="meta">Disponible: {item.disponibilite ? 'Oui' : 'Non'}</div>}
                 </div>
                 <div className="actions">
                   {cfg.canEdit && <button className="btn" onClick={() => onEdit(item)}>Modifier</button>}

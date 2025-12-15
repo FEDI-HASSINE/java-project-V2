@@ -23,7 +23,7 @@ import java.util.List;
 @RestController
 public class InterventionController {
 
-    private static final String ROLE_RESPONSABLE_MUNICIPALITE = "responsableMunicipalite";
+    private static final String ROLE_RESPONSABLE_MUNICIPALITE = "responsable_municipalite";
     private static final String ROLE_AGENT = "agent";
 
     private final InterventionService interventionService;

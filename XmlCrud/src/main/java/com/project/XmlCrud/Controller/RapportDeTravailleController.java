@@ -96,6 +96,21 @@ public class RapportDeTravailleController {
         return rapportService.getAllRapports();
     }
 
+    @GetMapping(value = "/rapports/{id}/export", produces = org.springframework.http.MediaType.APPLICATION_XML_VALUE)
+    public ResponseEntity<RapportDeTravaille> exportRapportXml(@PathVariable Integer id, Authentication authentication) {
+        if (!hasAuthority(authentication, ROLE_CHEF)) {
+            throw new AccessDeniedException("Seul le chef général peut exporter les rapports");
+        }
+        RapportDeTravaille rapport = rapportService.getAllRapports().stream()
+                .filter(r -> r.getInterventionRef().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rapport introuvable"));
+
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"rapport_" + id + ".xml\"")
+                .body(rapport);
+    }
+
     @GetMapping("/rapports/me")
     public List<RapportDeTravaille> getMyRapports(Authentication authentication) {
         if (!hasAuthority(authentication, ROLE_AGENT)) {

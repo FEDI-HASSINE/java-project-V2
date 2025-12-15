@@ -21,7 +21,7 @@ import java.util.List;
 @RestController
 public class EquipementController {
 
-    private static final String ROLE_RESPONSABLE_MUNICIPALITE = "responsableMunicipalite";
+    private static final String ROLE_RESPONSABLE_MUNICIPALITE = "responsable_municipalite";
 
     private final EquipementService equipementService;
 
@@ -41,11 +41,24 @@ public class EquipementController {
     }
 
     @GetMapping("/equipements")
-    public List<Equipement> getEquipements(Authentication authentication) {
+    public List<Equipement> getEquipements(@org.springframework.web.bind.annotation.RequestParam(required = false) boolean availableOnly,
+                                           Authentication authentication) {
         if (!hasAuthority(authentication, ROLE_RESPONSABLE_MUNICIPALITE) && !hasAuthority(authentication, "chef")) {
             throw new AccessDeniedException("Accès refusé");
         }
+        if (availableOnly) {
+            return equipementService.getAvailableEquipements();
+        }
         return equipementService.getAllEquipements();
+    }
+
+    @org.springframework.web.bind.annotation.DeleteMapping("/equipements/{id}")
+    public ResponseEntity<Void> deleteEquipement(@PathVariable Integer id, Authentication authentication) {
+        if (!hasAuthority(authentication, ROLE_RESPONSABLE_MUNICIPALITE)) {
+            throw new AccessDeniedException("Seule une responsableMunicipalite peut supprimer un equipement");
+        }
+        equipementService.deleteEquipement(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/interventions/{interventionId}/equipements")

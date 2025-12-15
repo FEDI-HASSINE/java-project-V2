@@ -159,6 +159,25 @@
 
     const AGENTS_MOCK = [];
 
+    function EquipementsList({ equipements, onDelete }) {
+      if (!equipements.length) return <div className="empty">Aucun équipement.</div>;
+      return (
+        <div className="list">
+          {equipements.map((e) => (
+            <div key={e.id} className="card-item" style={{ cursor: 'default' }}>
+              <div>
+                <div className="title">{e.nom}</div>
+                <div className="meta">ID {e.id} · {e.disponible ? 'Disponible' : 'Indisponible'}</div>
+              </div>
+              <div style={{ display: 'grid', gap: 6, justifyItems: 'end' }}>
+                <button className="btn btn-danger" onClick={() => onDelete(e)}>Supprimer</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
     function DemandesList({ demandes, onSelect, onCreateIntervention }) {
       if (!demandes.length) return <div className="empty">Aucune demande.</div>;
       return (
@@ -614,7 +633,8 @@
 
       const fetchEquipements = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/equipements`, {
+            // On récupère uniquement les équipements disponibles (non liés à une intervention)
+            const response = await fetch(`${API_BASE_URL}/equipements?availableOnly=true`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (response.ok) {
@@ -788,6 +808,29 @@
         setView('interventions');
       };
 
+      const handleDeleteEquip = async (equipement) => {
+        if (!confirm(`Voulez-vous vraiment supprimer l'équipement "${equipement.nom}" ?`)) return;
+        try {
+            const response = await fetch(`${API_BASE_URL}/equipements/${equipement.id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                setEquipements(prev => prev.filter(e => e.id !== equipement.id));
+            } else {
+                try {
+                    const err = await response.json();
+                    alert(err?.message || "Erreur lors de la suppression");
+                } catch (_) {
+                    alert("Erreur lors de la suppression");
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Erreur réseau");
+        }
+      };
+
       return (
         <div>
           <header>
@@ -795,6 +838,7 @@
             <div style={{display: 'flex', gap: 10}}>
                 <button className={`btn ${view === 'interventions' ? 'btn-primary' : ''}`} onClick={() => { setView('interventions'); setSelected(null); }}>Interventions</button>
                 <button className={`btn ${view === 'demandes' ? 'btn-primary' : ''}`} onClick={() => { setView('demandes'); setSelected(null); }}>Demandes</button>
+                <button className={`btn ${view === 'equipements' ? 'btn-primary' : ''}`} onClick={() => { setView('equipements'); setSelected(null); }}>Équipements</button>
             </div>
           </header>
 
@@ -814,11 +858,13 @@
           <div className="layout">
             <div className="panel">
               <div className="panel-header">
-                <span>{view === 'demandes' ? 'Demandes citoyen' : 'Interventions'}</span>
-                <span>{view === 'demandes' ? demandes.length : interventions.length}</span>
+                <span>{view === 'demandes' ? 'Demandes citoyen' : (view === 'equipements' ? 'Équipements' : 'Interventions')}</span>
+                <span>{view === 'demandes' ? demandes.length : (view === 'equipements' ? equipements.length : interventions.length)}</span>
               </div>
               {view === 'demandes' ? (
                 <DemandesList demandes={demandes} onSelect={setSelected} onCreateIntervention={handleCreateIntervention} />
+              ) : view === 'equipements' ? (
+                <EquipementsList equipements={equipements} onDelete={handleDeleteEquip} />
               ) : (
                 <InterventionsList interventions={interventions} onSelect={setSelected} onEdit={() => setShowEdit(true)} />
               )}
@@ -827,6 +873,8 @@
               <div className="panel-header"><span>Détails</span><span></span></div>
               {view === 'demandes' ? (
                 <DemandeDetail demande={selected} />
+              ) : view === 'equipements' ? (
+                <div className="empty">Sélectionnez un équipement pour voir les détails (non implémenté).</div>
               ) : (
                 <InterventionDetail intervention={selected} linkedEquipements={linkedEquipements} />
               )}

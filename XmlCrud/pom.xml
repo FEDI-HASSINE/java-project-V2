@@ -73,6 +73,12 @@
             <version>4.0.5</version>
         </dependency>
 
+        <!-- Jackson XML Support (Required for Spring MVC XML responses) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+        </dependency>
+
         <!-- Developer Tools -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

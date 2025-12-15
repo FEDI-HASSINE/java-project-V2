@@ -51,6 +51,39 @@ public class EquipementService {
         return XmlUtil.loadMunicipalite().getEquipements();
     }
 
+    public List<Equipement> getAvailableEquipements() {
+        Municipalite municipalite = XmlUtil.loadMunicipalite();
+        
+        // Get IDs of all equipments currently assigned to any intervention
+        Set<Integer> assignedEquipementIds = municipalite.getEquipementInterventions().stream()
+                .map(EquipementIntervention::getEquipementRef)
+                .collect(Collectors.toSet());
+
+        // Return only equipments that are NOT in the assigned set AND are marked available
+        return municipalite.getEquipements().stream()
+                .filter(e -> !assignedEquipementIds.contains(e.getId()) && e.isDisponible())
+                .collect(Collectors.toList());
+    }
+
+    public void deleteEquipement(Integer id) {
+        Municipalite municipalite = XmlUtil.loadMunicipalite();
+        Equipement equipement = municipalite.getEquipements().stream()
+                .filter(e -> e.getId() == id)
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Equipement introuvable"));
+
+        // Check if equipment is used in any intervention
+        boolean isUsed = municipalite.getEquipementInterventions().stream()
+                .anyMatch(link -> link.getEquipementRef() == id);
+        
+        if (isUsed) {
+             throw new IllegalStateException("Impossible de supprimer un équipement assigné à une intervention");
+        }
+
+        municipalite.getEquipements().remove(equipement);
+        XmlUtil.saveMunicipalite(municipalite);
+    }
+
     public List<Equipement> getEquipementsForIntervention(Integer interventionId) {
         Municipalite municipalite = XmlUtil.loadMunicipalite();
         ensureInterventionExists(municipalite, interventionId);

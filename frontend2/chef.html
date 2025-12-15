@@ -355,6 +355,25 @@
                       <div className="meta">Durée {r.duree} jours · Coût {r.cout} dt</div>
                       <div className="meta">{r.description}</div>
                     </div>
+                    <button className="btn" style={{ borderColor: 'var(--success)', color: 'var(--success)' }} onClick={(e) => {
+                        e.stopPropagation();
+                        fetch(`${API}/rapports/${r.interventionRef}/export`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        })
+                        .then(response => response.blob())
+                        .then(blob => {
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `rapport_${r.interventionRef}.xml`;
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                        })
+                        .catch(err => console.error("Erreur export", err));
+                    }}>
+                        📥 XML
+                    </button>
                   </div>
                 ))}
                 {rapports.length === 0 && <div className="empty">Aucun rapport.</div>}
